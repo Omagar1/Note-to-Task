@@ -7,12 +7,12 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
 
-    <body>
+    <body class="w-full h-hull">
         <header>
             @yield('header')
         </header>
 
-        <main>
+        <main class = " w-full h-full box-content size-32 border-4 p-4 ">
             @yield('mainContent')
         </main>
 

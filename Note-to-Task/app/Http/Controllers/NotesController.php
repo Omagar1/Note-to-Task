@@ -4,56 +4,65 @@ namespace App\Http\Controllers;
 
 use App\Models\Notes;
 use Illuminate\Http\Request;
+use Route;
 
 class NotesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+    
 
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        //
+        //echo "create test";
+
+        $newNotePage = Notes::create([
+            'title' => 'Notes on ' . now()->format('Y-m-d H:i:s'),
+            'user_id' => auth()->id(),
+            'content' => ''
+        ]);
+
+        return redirect()->route('notes.show', $newNotePage);
+
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+    public function show(Notes $notes) {
+        return view('notes.show', ['notes' => $notes]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Notes $notes)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Notes $notes)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Notes $notes)
+    public function update_content(Request $request)
     {
-        //
+        $id = $request->input('id');
+        $new_content = $request->input('content');
+
+        $note = Notes::findOrFail($id);
+        $note->update(['content' => $new_content]);
+        return response()->json(['message' => 'Content updated successfully']);
+        // add error handling 
     }
+
+    public function update_title(Request $request)
+    {
+        request()->validate([
+            'id' => 'required|integer|exists:notes,id',
+            'title' => 'required|string|max:255',
+        ]);
+
+        $id = $request->input('id');
+        $new_title = $request->input('title');
+
+        $note = Notes::findOrFail($id);
+        $note->update(['title' => $new_title]);
+
+        return response()->json(['message' => 'Title updated successfully']);
+        // add error handling 
+    }
+
 
     /**
      * Remove the specified resource from storage.
