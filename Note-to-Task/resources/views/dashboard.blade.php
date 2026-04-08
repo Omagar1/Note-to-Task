@@ -22,7 +22,7 @@
 
         
 
-        <div class="w-1/2 h-full flex flex-col items-center justify-center">
+        <div class="w-1/2 h-full flex flex-col items-center justify-center bg-gray-100 rounded-lg p-4">
                 <div class = "sticky top-0">
                     <h1 class="text-4xl font-bold mb-4">Active Tasks</h1> 
                     <!-- insert search bar code here once made   -->

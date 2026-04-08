@@ -7,7 +7,9 @@ Alpine.store('savingElement', {
         this.isShown = true;
     },
     hide() {
-        this.isShown = false;
+        setTimeout(() => {
+            this.isShown = false;
+        }, 1000);
     },
     toggle() {
         this.isShown = !this.isShown;
