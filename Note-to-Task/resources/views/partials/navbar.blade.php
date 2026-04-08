@@ -1,7 +1,7 @@
 <nav class="bg-gray-800 p-4">
     <div class="container mx-auto flex items-center justify-between">
         @auth
-            <div  x-show="$store.savingElement.isShown" class="text-white text-lg bg-green-500 font-semibold flex items-center space-x-2">
+            <div x-data x-show="$store.savingElement.isShown" class="text-white text-lg bg-green-500 font-semibold flex items-center space-x-2">
                 <p class="text-white text-lg font-semibold">saving</p>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" class="size-5 fill-success motion-safe:animate-spin dark:fill-success">
                     <path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25" />

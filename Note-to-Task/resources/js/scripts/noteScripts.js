@@ -10,9 +10,10 @@ export default function noteComponents(note, ){
         justSaved: false,
         // methods:
         async updateTitle(route, csrfToken) {
+            console.log(this.$store.savingElement);
             // start saving notification here once made
             console.log('Attempting to save title:', this.title); // debug log to verify title value
-            this.$store.savingBar.show();
+            this.$store.savingElement.show();
             
             if (this.justSaved) {
                 console.log('Title not saved - already just saved'); // debug log to verify that the justSaved flag is working
@@ -45,11 +46,11 @@ export default function noteComponents(note, ){
 
                     const data = await response.json();
                     console.log(data.message);
-                    this.$store.savingBar.hide();
+                    this.$store.savingElement.hide();
                 } catch (error) {
                     console.error('Error updating title:', error);
                     // show error notification here once made
-                    this.$store.savingBar.hide();
+                    this.$store.savingElement.hide();
                 }
             }
         }
