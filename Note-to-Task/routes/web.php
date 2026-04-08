@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\NotesController;
+use App\Http\Controllers\NoteController;
 use App\Http\Controllers\TaskController;
 use Symfony\Component\Routing\Loader\Configurator\Routes;
 
@@ -17,11 +17,11 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
-    Route::resource('notes', NotesController::class);
-    Route::post('/notes/update_content', [NotesController::class, 'update_content'])->name('notes.update_content');
-    Route::post('/notes/update_title', [NotesController::class, 'update_title'])->name('notes.update_title');
+    Route::resource('note', NoteController::class);
+    Route::post('/note/update_content', [NoteController::class, 'update_content'])->name('note.update_content');
+    Route::post('/note/update_title', [NoteController::class, 'update_title'])->name('note.update_title');
 
-    Route::resource('tasks', TaskController::class);
+    Route::resource('task', TaskController::class);
 
     Route::get('settings', function () {
         return view('settings');

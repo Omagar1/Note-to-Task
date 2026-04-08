@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Notes;
+use App\Models\Note;
 use Illuminate\Http\Request;
 use Route;
 
-class NotesController extends Controller
+class NoteController extends Controller
 {
     
 
@@ -17,18 +17,19 @@ class NotesController extends Controller
     {
         //echo "create test";
 
-        $newNotePage = Notes::create([
+        $newNotePage = Note::create([
             'title' => 'Notes on ' . now()->format('Y-m-d H:i:s'),
             'user_id' => auth()->id(),
             'content' => ''
         ]);
 
-        return redirect()->route('notes.show', $newNotePage);
+        return redirect()->route('note.show', $newNotePage);
 
     }
 
-    public function show(Notes $notes) {
-        return view('notes.show', ['notes' => $notes]);
+    public function show(Note $note)
+    {
+        return view('note.show', ['note' => $note]);
     }
 
 
@@ -40,7 +41,7 @@ class NotesController extends Controller
         $id = $request->input('id');
         $new_content = $request->input('content');
 
-        $note = Notes::findOrFail($id);
+        $note = Note::findOrFail($id);
         $note->update(['content' => $new_content]);
         return response()->json(['message' => 'Content updated successfully']);
         // add error handling 
@@ -56,7 +57,7 @@ class NotesController extends Controller
         $id = $request->input('id');
         $new_title = $request->input('title');
 
-        $note = Notes::findOrFail($id);
+        $note = Note::findOrFail($id);
         $note->update(['title' => $new_title]);
 
         return response()->json(['message' => 'Title updated successfully']);
@@ -67,7 +68,7 @@ class NotesController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Notes $notes)
+    public function destroy(Note $note)
     {
         //
     }

@@ -15,7 +15,7 @@
             </div>
             <!-- insert  code to get titles of all notes pages here -->
 
-            <a href="{{ route('notes.create') }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+            <a href="{{ route('note.create') }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                 Create New Notes
             </a>
         </div>
