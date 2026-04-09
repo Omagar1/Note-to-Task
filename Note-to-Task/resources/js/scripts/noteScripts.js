@@ -1,5 +1,5 @@
 
-export default function noteComponents(note, ){
+export default function noteComponents(note){
     return {
         // attributes:
         id: note.id,
@@ -8,11 +8,6 @@ export default function noteComponents(note, ){
         title: note.title,
         currentTitle: note.title, // to track the last saved title for change detection
         editingTitle: false,
-        //content stuff
-        contentHistory: [note.content], // to track content history for change detection
-        contentFuture: [], // to track content for redo functionality
-        contentPresent: note.content,
-        editingContent: false,
         
         // methods:
         async updateTitle(route, csrfToken) {
@@ -43,7 +38,7 @@ export default function noteComponents(note, ){
                             'X-CSRF-TOKEN': csrfToken
                         },
                         body: JSON.stringify({ title: this.title,
-                            id: this.id
+                        id: this.id
                         })
                     });
 
@@ -61,69 +56,5 @@ export default function noteComponents(note, ){
                 }
             }
         },
-        // content stuff
-        updateContent(newContent) {
-            this.contentHistory.push(this.newContent); // save current content to history before updating
-            this.contentPresent = newContent;
-            this.contentFuture = []; // clear future content on new edit
-        },
-        
-        undoContent() {
-            if (this.contentHistory.length > 1) { 
-                this.contentFuture.push(this.contentPresent); 
-                this.contentPresent = this.contentHistory.pop(); 
-            }
-        },
-
-        redoContent() {
-            if (this.contentFuture.length > 0) {
-                this.contentHistory.push(this.contentPresent);
-                this.contentPresent = this.contentFuture.pop();
-            }
-        },
-
-        async saveContentToDB(route, csrfToken) {
-            
-            this.$store.savingElement.show();
-            
-            if (this.title === this.currentTitle ) {
-                this.editingTitle = false; // no change so no need to save
-                this.$store.savingElement.hide(); 
-                console.log('Title not saved - no change'); // debug log to verify no change
-                return;
-            } 
-            else {
-                this.editingTitle = false;
-                this.justSaved = true; // set flag to prevent immediate subsequent saves
-
-                try {
-                    const response = await fetch(route, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken
-                        },
-                        body: JSON.stringify({ title: this.title,
-                            id: this.id
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-
-                    const data = await response.json();
-                    console.log(data.message);
-                    this.$store.savingElement.hide();
-                } catch (error) {
-                    console.error('Error updating title:', error);
-                    // show error notification here once made
-                    this.$store.savingElement.hide();
-                }
-            }
-        },
-
-        
-
     }
 }

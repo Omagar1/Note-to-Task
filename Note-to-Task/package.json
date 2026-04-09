@@ -18,6 +18,7 @@
     },
     "dependencies": {
         "alpinejs": "^3.15.9",
-        "marked": "^17.0.5"
+        "marked": "^17.0.5",
+        "quill": "^2.0.3"
     }
 }

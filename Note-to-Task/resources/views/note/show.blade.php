@@ -16,15 +16,19 @@
                 
                 <!-- insert search bar code here once made   -->
                 <!-- insert filter code here once made   -->
-                <button @click="rawText += '**bold**'">Bold</button>
-                <button @click="rawText += '*italic*'">Italic</button>
-                <button @click="rawText += '# Heading'">H1</button>
+                
+            </div>
+            <div x-data ='noteEditor({
+                initialContent: @json($note->content),
+                noteId: {{ $note->id }},
+                route: @json(route("note.update_content")),
+                csrfToken: @json(csrf_token())
+            })' 
+            x-init="init()" >
+                <div x-ref="editor"></div>
             </div>
             
-            
-            <textarea id="note" class="w-full h-full border-2 border-gray-300 rounded-lg p-4" placeholder="Write your note here...">
-                {{ $note->content }}
-            </textarea>
+
             
 
             

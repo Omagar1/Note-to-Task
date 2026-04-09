@@ -20,7 +20,6 @@ class NoteController extends Controller
         $newNotePage = Note::create([
             'title' => 'Notes on ' . now()->format('Y-m-d H:i:s'),
             'user_id' => auth()->id(),
-            'content' => ''
         ]);
 
         return redirect()->route('note.show', $newNotePage);
@@ -38,6 +37,12 @@ class NoteController extends Controller
      */
     public function update_content(Request $request)
     {
+        //return response()->json(['message' => $request->input('content')]); //test
+        request()->validate([
+            'id' => 'required|integer|exists:notes,id',
+            'content' => 'required|json',
+        ]);
+
         $id = $request->input('id');
         $new_content = $request->input('content');
 
@@ -49,6 +54,7 @@ class NoteController extends Controller
 
     public function update_title(Request $request)
     {
+        //return response()->json(['message' => $request->input('title')]); //test
         request()->validate([
             'id' => 'required|integer|exists:notes,id',
             'title' => 'required|string|max:255',
@@ -65,9 +71,7 @@ class NoteController extends Controller
     }
 
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(Note $note)
     {
         //
