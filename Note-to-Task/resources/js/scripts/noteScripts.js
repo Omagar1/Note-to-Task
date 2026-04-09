@@ -4,6 +4,7 @@ export default function noteComponents(note){
         // attributes:
         id: note.id,
         justSaved: false,
+        deleted: false, // used for front end deletion of note after delete request is made - set to true to hide note from dashboard list without needing to refresh page
         // title stuff
         title: note.title,
         currentTitle: note.title, // to track the last saved title for change detection
@@ -56,5 +57,31 @@ export default function noteComponents(note){
                 }
             }
         },
-    }
+
+        async deleteNote(route, csrfToken) {
+    
+            if (confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
+
+                this.deleted = true; // set flag to hide note from dashboard list
+                try {
+                    const response = await fetch(route, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: JSON.stringify({ id: this.id })
+                    })
+                
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    
+                } catch(error) {
+                    console.error('Error deleting note:', error);
+                    // show error notification here once made
+                }
+            }
+        }
+    };
 }

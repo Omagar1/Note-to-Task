@@ -13,13 +13,12 @@ Route::get('/', function () {
 
 // post login stuff (it's secure) 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [NoteController::class, 'index'])->name('dashboard');
 
     Route::resource('note', NoteController::class);
     Route::post('/note/update_content', [NoteController::class, 'update_content'])->name('note.update_content');
     Route::post('/note/update_title', [NoteController::class, 'update_title'])->name('note.update_title');
+    Route::post('/note/delete', [NoteController::class, 'destroy'])->name('note.delete');
 
     Route::resource('task', TaskController::class);
 

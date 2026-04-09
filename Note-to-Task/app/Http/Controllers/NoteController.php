@@ -9,6 +9,12 @@ use Route;
 class NoteController extends Controller
 {
     
+    public function index()
+    {
+        // will also have tasks once made
+        $notes = Note::where('user_id', auth()->id())->get();
+        return view('dashboard', ['notes' => $notes]);
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -30,6 +36,8 @@ class NoteController extends Controller
     {
         return view('note.show', ['note' => $note]);
     }
+
+
 
 
     /**
@@ -72,8 +80,11 @@ class NoteController extends Controller
 
 
     
-    public function destroy(Note $note)
+    public function destroy(Request $request)
     {
-        //
+        $id = $request->input('id');
+        $note = Note::findOrFail($id);
+        $note->delete();
+        return response()->json(['message' => 'Note deleted successfully']);
     }
 }

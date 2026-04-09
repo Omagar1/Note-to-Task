@@ -11,22 +11,22 @@
 
     </head>
 
-    <body class="w-full h-hull">
+    <body class="w-screen h-screen">
         <header>
             @yield('header')
         </header>
 
         @auth
-            <main class = "grid grid-cols-1 gap-4 p-4 sm:mx-8">
+            <main class = "grid grid-cols-1 gap-4 p-4 sm:mx-8 h-full">
         @endauth
         @guest
-            <main class = "grid grid-cols-1 gap-4 p-4 sm:mx-8 md:mx-16 md:mt-10 lg:mx-32 lg:mt-20 xl:mx-64 xl:mt-20 2xl:mx-96 2xl:mt-20 shadow-2xl">
+            <main class = "grid grid-cols-1 gap-4 p-4 sm:mx-8 md:mx-16 md:mt-10 lg:mx-32 lg:mt-20 xl:mx-64 xl:mt-20 2xl:mx-96 2xl:mt-20 shadow-2xl ">
         @endguest
     
             @yield('mainContent')
         </main>
 
-        <footer class = "absolute bottom-0 bg-gray-800 text-white text-center py-4">
+        <footer class = "fixed bottom-0 w-full bg-gray-800 text-white text-center py-4">
             @yield('footer')
         </footer>
     </body>

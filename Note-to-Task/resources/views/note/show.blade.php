@@ -6,8 +6,8 @@
 
 
 @section('mainContent')
-    <div class="grid grid-cols-3 gap-2">
-        <div class="grid grid-cols-1 gap-2 items-center justify-center">
+    <div class="grid grid-cols-2 gap-2 items- center">
+        <div class="grid grid-cols-1 gap-2 items-start justify-start content-start p-4">
             <div class = "sticky top-0">
                 <div x-data = 'noteComponents( @json($note) )' class="flex items-center mb-4">
                     <button x-show ="!editingTitle" @click="editingTitle = true, justSaved = false "><h1 x-text="title" class="text-4xl font-bold mb-4"></h1></button>
@@ -29,11 +29,8 @@
             </div>
         </div>
 
-        <div class = "w-1/40 flex items-center justify-center bg-gray-900 p-4">
-            <!-- middle bar  -->
-        </div>
 
-        <div class="grid grid-cols-1 gap-2 items-center justify-center">
+        <div class="grid grid-cols-1 gap-2 items-start justify-start content-start bg-gray-100 p-4">
                 <div class = "sticky top-0">
                     <h1 class="text-4xl font-bold mb-4">Tasks</h1> 
                     <!-- insert search bar code here once made   -->
