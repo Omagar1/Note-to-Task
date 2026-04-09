@@ -2,7 +2,8 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
     return {
         quill: null,
         saveTimeout: null,
-        lastSaved: null,
+        lastSavedContent: null,
+        currentContent: null, // used for keyword detection - updated faster than lastSavedContent to allow for more responsive keyword detection without triggering saves
         initialContent,
         noteId,
         csrfToken,
@@ -37,16 +38,19 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                     },
                     placeholder: 'Compose an epic... or just a shopping list perhaps?',
                     theme: 'snow', 
+                    readOnly: false
                 });
                 
 
                 if (this.initialContent) {
                     console.log('Loading initial content:', this.initialContent); // test log to verify content is being loaded
                     this.quill.setContents(JSON.parse(this.initialContent));
-                    this.lastSaved = this.initialContent;
+                    this.lastSavedContent = this.initialContent;
+                    this.currentContent = this.initialContent;
                 }
 
                 this.quill.on('text-change', (delta, oldDelta, source) => {
+                    this.currentContent = JSON.stringify(this.quill.getContents());
                     //console.log('Text change detected:', source); // test
                     if (source === 'user') {
                         this.scheduleSave();
@@ -62,11 +66,26 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
             }, 2000);
         },
 
+        normalizeDelta(delta) {
+            const ops = [...delta.ops];
+
+            // Remove leading empty ops
+            while (ops.length && ops[0].insert.trim() === '') ops.shift();
+
+            // Ensure last op ends with newline
+            let lastOp = ops[ops.length - 1];
+            if (!lastOp.insert.endsWith('\n')) {
+                ops.push({ insert: '\n' });
+            }
+
+            return { ops };
+        },
+
         async save() {
             this.$store.savingElement.show();
-            const content = JSON.stringify(this.quill.getContents());
+            const content = JSON.stringify(this.normalizeDelta(this.quill.getContents()));
 
-            if (content === this.lastSaved) {
+            if (content === this.lastSavedContent) {
                 return;
             } 
 
@@ -88,7 +107,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                 console.log(data.message);
                 this.$store.savingElement.hide();
 
-                this.lastSaved = content;
+                this.lastSavedContent = content;
                 
             } catch (error) {
                 console.error('Error saving note:', error);
