@@ -18,7 +18,9 @@
                 <!-- insert filter code here once made   -->
                 
             </div>
-            <div x-data ='noteEditor({
+
+            @include('components.forms.tinymce-editor')
+            <!-- <div x-data ='noteEditor({
                 initialContent: @json($note->content),
                 noteId: {{ $note->id }},
                 route: @json(route("note.update_content")),
@@ -27,7 +29,7 @@
             x-init="init()" >
             
                 <div x-ref="editor" class="w-full h-full bg-white p-4"></div>
-            </div>
+            </div> -->
         </div>
 
 
