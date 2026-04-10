@@ -6,8 +6,8 @@
         <title>Note to Task</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <!-- quill text editor stuff -->
-        <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-        <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+        <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+        <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 
     </head>
 

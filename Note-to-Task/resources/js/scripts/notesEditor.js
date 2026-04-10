@@ -11,7 +11,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
 
         init() {
             
-            this.$nextTick(() => {
+            
                 if (this.quill) {
                     return;
                 }
@@ -21,7 +21,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
 
                 // this.quill.setText("test\n")
                 
-
+                console.log('Before Quill:', this.$refs.editor.innerHTML);
                 this.quill = new Quill(this.$refs.editor, {
                     modules: {
                         toolbar: [
@@ -44,19 +44,27 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
 
                 if (this.initialContent) {
                     console.log('Loading initial content:', this.initialContent); // test log to verify content is being loaded
-                    this.quill.setContents(JSON.parse(this.initialContent));
+
+                    let normalizeInitialContent = this.normalizeDelta(JSON.parse(this.initialContent));
+                    console.log('Normalized initial content:', normalizeInitialContent); // test log to verify normalization of initial content
+
+                    
+                    this.quill.setContents(normalizeInitialContent);
+                    this.quill.setSelection(Math.max(0, this.quill.getLength() +1 ), 0);
+
                     this.lastSavedContent = this.initialContent;
                     this.currentContent = this.initialContent;
                 }
+                console.log('After Quill init:', this.$refs.editor.innerHTML);
 
                 this.quill.on('text-change', (delta, oldDelta, source) => {
-                    this.currentContent = JSON.stringify(this.quill.getContents());
-                    //console.log('Text change detected:', source); // test
+                    //this.currentContent = JSON.stringify(this.quill.getContents());
+                    console.log('Text change detected:', source); // test
                     if (source === 'user') {
                         this.scheduleSave();
                     }
                 });
-            });
+            
         },
 
         scheduleSave() {
@@ -67,18 +75,46 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
         },
 
         normalizeDelta(delta) {
-            const ops = [...delta.ops];
-
-            // Remove leading empty ops
-            while (ops.length && ops[0].insert.trim() === '') ops.shift();
-
-            // Ensure last op ends with newline
-            let lastOp = ops[ops.length - 1];
-            if (!lastOp.insert.endsWith('\n')) {
-                ops.push({ insert: '\n' });
+            console.log('Normalizing delta:', delta); // test log to verify delta is being normalized
+            // case where delta is null or doesn't have ops array
+            if (!delta || !Array.isArray(delta.ops)) {
+                return { ops: [{ insert: '\n' }] };
             }
 
-            return { ops };
+            const ops = [...delta.ops];// create a copy of the ops array
+            let newOps = [];
+
+            // for every \n char make new op with insert: '\n' to ensure newlines are properly represented in the delta 
+            ops.forEach(op => {
+                if (typeof op.insert === 'string' && op.insert.includes('\n')) {
+                    const parts = op.insert.split('');
+                    console.log('Splitting op with newlines:', op, 'into parts:', parts); // test log to verify splitting of ops with newlines
+                    let newOp = [];
+                    parts.forEach((part) => {
+                        console.log('Processing part:', part); // test log to verify processing of each part
+                        newOp.push(part);
+                        console.log('Current newOp:', newOp); // test log to verify construction of newOp
+                        if (part === '\n') {
+                            console.log('Newline detected adding: ', newOp ); // test log to verify newline detection
+                            newOps.push({ insert: newOp.join('') });
+                            newOp = [];
+                        }
+                    });
+                } else {
+                    newOps.push(op);
+                }
+            });
+
+            console.log('Normalized ops:', newOps); // test log to verify normalization
+
+            // // Ensure last op is a newline
+            // const lastOp = ops[ops.length - 1];
+
+            // if (!lastOp || typeof lastOp.insert !== 'string' || !lastOp.insert.endsWith('\n')) {
+            //     ops.push({ insert: '\n' });
+            // }
+
+            return  { ops: newOps } ;
         },
 
         async save() {
@@ -107,10 +143,11 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                 console.log(data.message);
                 this.$store.savingElement.hide();
 
-                this.lastSavedContent = content;
+                //this.lastSavedContent = content;
                 
             } catch (error) {
                 console.error('Error saving note:', error);
+                this.$store.savingElement.hide();
                 // show error notification here once made
             }
             this.$store.savingElement.hide();

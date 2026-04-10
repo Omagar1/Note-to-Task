@@ -25,6 +25,7 @@
                 csrfToken: @json(csrf_token())
             })' 
             x-init="init()" >
+            
                 <div x-ref="editor" class="w-full h-full bg-white p-4"></div>
             </div>
         </div>
