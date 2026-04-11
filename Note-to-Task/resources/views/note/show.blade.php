@@ -1,5 +1,10 @@
 @extends('layouts.default')
 
+@section('headExtras')
+    @include('components.head.tinymce-config')
+
+@endsection
+
 @section('header')
     @include('partials.navbar')
 @endsection
@@ -19,17 +24,9 @@
                 
             </div>
 
-            @include('components.forms.tinymce-editor')
-            <!-- <div x-data ='noteEditor({
-                initialContent: @json($note->content),
-                noteId: {{ $note->id }},
-                route: @json(route("note.update_content")),
-                csrfToken: @json(csrf_token())
-            })' 
-            x-init="init()" >
-            
-                <div x-ref="editor" class="w-full h-full bg-white p-4"></div>
-            </div> -->
+            <div  x-data='noteEditor({ initialContent: @json($note->content), noteId: {{ $note->id }}, route: @json(route("note.update_content")), csrfToken: @json(csrf_token()) })' x-init="init()">
+                <textarea id="note-content" ></textarea>
+            </div>
         </div>
 
 

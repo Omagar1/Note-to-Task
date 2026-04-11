@@ -6,7 +6,7 @@
         <title>Note to Task</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <!-- tinyMCE text editor stuff -->
-        @include('components.head.tinymce-config')
+        @yield('headExtras')
 
     </head>
 

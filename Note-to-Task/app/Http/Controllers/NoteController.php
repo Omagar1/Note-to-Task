@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Note;
+use Exception;
 use Illuminate\Http\Request;
 use Route;
+use Throwable;
 
 class NoteController extends Controller
 {
@@ -44,20 +46,23 @@ class NoteController extends Controller
      * Update the specified resource in storage.
      */
     public function update_content(Request $request)
-    {
-        //return response()->json(['message' => $request->input('content')]); //test
-        request()->validate([
-            'id' => 'required|integer|exists:notes,id',
-            'content' => 'required|json',
-        ]);
+    {   
+        try{
+            //return response()->json(['message' => $request->input('content')]); //test
+            request()->validate([
+                'id' => 'required|integer|exists:notes,id',
+                'content' => 'required|string',
+            ]);
 
-        $id = $request->input('id');
-        $new_content = $request->input('content');
+            $id = $request->input('id');
+            $new_content = $request->input('content');
 
-        $note = Note::findOrFail($id);
-        $note->update(['content' => $new_content]);
-        return response()->json(['message' => 'Content updated successfully']);
-        // add error handling 
+            $note = Note::findOrFail($id);
+            $note->update(['content' => $new_content]);
+            return response()->json(['message' => 'Content updated successfully']);
+        } catch (Throwable $e){
+            return response()->json(['message' => "error: ", $e]);
+        }
     }
 
     public function update_title(Request $request)

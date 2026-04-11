@@ -4,6 +4,7 @@ import noteComponents from './scripts/noteScripts'
 import './scripts/savingElement'
 import noteEditor from './scripts/notesEditor';
 
+
 window.Alpine = Alpine
 
 Alpine.data('noteComponents', noteComponents)

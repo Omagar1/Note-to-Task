@@ -18,6 +18,8 @@
     },
     "dependencies": {
         "alpinejs": "^3.15.9",
+        "html-to-json-parser": "^2.0.1",
+        "j2h-framework": "^1.0.0",
         "marked": "^17.0.5",
         "quill": "^2.0.3"
     }
