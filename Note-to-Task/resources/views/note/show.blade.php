@@ -11,7 +11,7 @@
 
 
 @section('mainContent')
-    <div class="grid grid-cols-2 gap-2 items- center">
+    <div class="grid grid-rows-2 lg:grid-cols-2 gap-4">
         <div class="grid grid-cols-1 gap-2 items-start justify-start content-start p-4">
             <div class = "sticky top-0">
                 <div x-data = 'noteComponents( @json($note) )' class="flex items-center mb-4">

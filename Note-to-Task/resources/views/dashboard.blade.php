@@ -28,6 +28,10 @@
 
             @endforeach
 
+            @if (count($notes) < 1)
+                <p>no notes at current</p>
+            @endif
+
             <a href="{{ route('note.create') }}" class="sticky bottom-15 w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                 Create New Notes
             </a>

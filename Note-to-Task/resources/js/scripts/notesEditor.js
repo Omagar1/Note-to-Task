@@ -17,7 +17,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                 setup: (editor) => {
                     this.editor = editor;
                     editor.on( 'init', () => {
-                        editor.setContent(this.initialContent)
+                        if (initialContent) editor.setContent(this.initialContent)
                     });
                     editor.on('change keyup undo redo', () => {
                         console.log('Text changed');
