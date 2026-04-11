@@ -18,9 +18,17 @@ class TaskController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        request()->validate([
+            'id' => 'required|integer|exists:notes,id',
+            'title' => 'required|string|max:255',
+        ]);
+
+        $id = $request->input('id');
+        $new_title = $request->input('title');
+
+        return response()->json(['message' => 'Title updated successfully']);
     }
 
     /**

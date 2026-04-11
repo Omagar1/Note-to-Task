@@ -51,7 +51,6 @@ class NoteController extends Controller
             //return response()->json(['message' => $request->input('content')]); //test
             request()->validate([
                 'id' => 'required|integer|exists:notes,id',
-                'content' => 'required|string',
             ]);
 
             $id = $request->input('id');

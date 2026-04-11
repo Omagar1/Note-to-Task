@@ -8,6 +8,8 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
         noteId,
         csrfToken,
         route,
+        keywords: ["task:"], // will be loaded in from DB 
+
         
         init() {
             tinymce.init({
@@ -22,10 +24,29 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                     editor.on('change keyup undo redo', () => {
                         console.log('Text changed');
                         this.currentContent = editor.getContent();
+                        this.checkForKeywords();
                         this.scheduleSave();
                     });
                 }
             });
+        },
+
+        checkForKeywords() {
+            //console.log(typeof(this.currentContent))
+            for(const keyword of this.keywords){
+                const keywordRegex = new RegExp(keyword, "di");
+                let instancesOfKeyword = this.currentContent.match(keywordRegex);
+                console.log(instancesOfKeyword); //test 
+                if(keywordRegex.test(this.currentContent)){
+                    // get the outer html of the last instance of teh keyword
+                    
+
+
+                    // trigger keyword's action 
+                    console.log(keyword," triggered");
+                }                
+                
+            }
         },
 
         scheduleSave() {
@@ -53,7 +74,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
             } 
 
             try {
-                console.log(this.route)
+                //console.log(this.route)
                 const response = await fetch(this.route, {
                     method: 'POST',
                     headers: {
