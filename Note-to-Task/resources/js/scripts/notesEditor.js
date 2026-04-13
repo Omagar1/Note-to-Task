@@ -1,4 +1,5 @@
 
+
 export default function noteEditor({ initialContent, noteId, route, csrfToken} ) {
     return {
         saveTimeout: null,
@@ -31,19 +32,41 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
             });
         },
 
+        getIndicesOf(searchStr, str, caseSensitive) { // from https://stackoverflow.com/questions/3410464/how-to-find-indices-of-all-occurrences-of-one-string-in-another-in-javascript
+            var searchStrLen = searchStr.length;
+            if (searchStrLen == 0) {
+                return [];
+            }
+            var startIndex = 0, index, indices = [];
+            if (!caseSensitive) {
+                str = str.toLowerCase();
+                searchStr = searchStr.toLowerCase();
+            }
+            while ((index = str.indexOf(searchStr, startIndex)) > -1) {
+                indices.push(index);
+                startIndex = index + searchStrLen;
+            }
+            return indices;
+        },
+
         checkForKeywords() {
             //console.log(typeof(this.currentContent))
             for(const keyword of this.keywords){
-                const keywordRegex = new RegExp(keyword, "di");
-                let instancesOfKeyword = this.currentContent.match(keywordRegex);
-                console.log(instancesOfKeyword); //test 
-                if(keywordRegex.test(this.currentContent)){
-                    // get the outer html of the last instance of teh keyword
+                
+                let indexesOfKeyword = this.getIndicesOf(keyword, this.currentContent, false);
+                
+                if(indexesOfKeyword.length > 0){
+                    console.log(keyword," triggered");
+                    console.log("Indexes: ", indexesOfKeyword);
+                    console.log("Current content: ", this.currentContent);
+                    let taskTitleStartIndex = indexesOfKeyword[indexesOfKeyword.length - 1] + keyword.length; 
+                    let taskTitleEndIndex = this.currentContent.indexOf('<', taskTitleStartIndex);
+                    let taskTitle = this.currentContent.substring(taskTitleStartIndex, taskTitleEndIndex).trim();
+
+                    console.log("Task title:", taskTitle);
                     
 
 
-                    // trigger keyword's action 
-                    console.log(keyword," triggered");
                 }                
                 
             }
