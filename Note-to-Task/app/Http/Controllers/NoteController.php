@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Route;
 use Throwable;
+use App\Models\Task;
 
 class NoteController extends Controller
 {
@@ -36,7 +37,8 @@ class NoteController extends Controller
 
     public function show(Note $note)
     {
-        return view('note.show', ['note' => $note]);
+        $tasks = Task::where('made_from_note_id', $note->id)->get();
+        return view('note.show', ['note' => $note, 'tasks' => $tasks]);
     }
 
 
