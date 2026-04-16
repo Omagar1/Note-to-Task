@@ -15,12 +15,16 @@ Route::get('/', function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [NoteController::class, 'index'])->name('dashboard');
 
+    // note stuff
     Route::resource('note', NoteController::class);
     Route::post('/note/update_content', [NoteController::class, 'update_content'])->name('note.update_content');
     Route::post('/note/update_title', [NoteController::class, 'update_title'])->name('note.update_title');
     Route::post('/note/delete', [NoteController::class, 'destroy'])->name('note.delete');
-
-    Route::resource('task', TaskController::class);
+    // task stuff
+    //Route::resource('task', TaskController::class);
+    Route::post('/task/create', [TaskController::class, 'create'])->name('task.create');
+    Route::post('/task/update', [TaskController::class, 'update'])->name('task.update');
+    Route::post('/task/delete', [TaskController::class, 'destroy'])->name('task.delete');
 
     Route::get('settings', function () {
         return view('settings');

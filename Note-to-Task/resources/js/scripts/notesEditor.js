@@ -55,52 +55,13 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
             for(const keyword of this.keywords){
                 
                 let indexesOfKeyword = this.getIndicesOf(keyword, this.currentContent, false);
+                console.log("Indexes: ", indexesOfKeyword);// test
                 
                 if(indexesOfKeyword.length > 0){
-                    // run keywords action function: 
-                    // below is an the code for the "task:" keyword
-
-                    console.log(keyword," triggered");
-                    // get data
-                    console.log("Indexes: ", indexesOfKeyword);
-                    console.log("Current content: ", this.currentContent);
-
-                    // getting title
-                    let taskTitleStartIndex = indexesOfKeyword[indexesOfKeyword.length - 1] + keyword.length; 
-                    let taskTitleEndIndex = this.currentContent.indexOf('<', taskTitleStartIndex);
-                    let taskTitle = this.currentContent.substring(taskTitleStartIndex, taskTitleEndIndex).trim();
-
-                    console.log("Task title:", taskTitle);
-
-                    // store in db 
-
-                    // show on front end
+                    let dispatchName = keyword.replace(/[:)#-_]/g, "") + "-detected";
+                    console.log("sent to ",dispatchName);
+                    this.$dispatch(dispatchName, {noteContent: this.currentContent, indexesOfKeyword: indexesOfKeyword});
                     
-                    let taskContainer = document.getElementById("taskContainer");
-                    let oldXData = taskContainer.getAttribute('x-data').tasks;
-                    console.log("oldXData: ", oldXData);
-                    let newXData = {title: taskTitle };// add other attributes as necessary
-
-                    if(oldXData){
-                        newXData = `{tasks:  ${oldXData['tasks'].append(newXData)} }`;
-                    } else{
-                        newXData = `{tasks: ${newXData} }`;
-                    }
-
-                    console.log("newXData: ", newXData);
-                    
-                    taskContainer.setAttribute('x-data', newXData );
-
-                    //test
-                    let testTaskContainer = document.getElementById("taskContainer");
-                    let testXData = testTaskContainer.getAttribute('x-data').tasks;
-                    console.log("testXData: ", testXData);
-
-                    
-                    
-                    
-
-
                 }                
                 
             }
