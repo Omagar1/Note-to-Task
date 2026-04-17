@@ -17,6 +17,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
             tinymce.init({
                 selector: 'textarea#note-content',
                 plugins: 'lists link code',
+                extended_valid_elements: 'b[class|id]', // allow b tags with class and id attributes
                 toolbar: 'undo redo | fontfamily fontsize | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image table | code',
                 setup: (editor) => {
                     this.editor = editor;
@@ -60,7 +61,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                 if(indexesOfKeyword.length > 0){
                     let dispatchName = keyword.replace(/[:)#-_]/g, "") + "-detected";
                     console.log("sent to ",dispatchName);
-                    this.$dispatch(dispatchName, {noteContent: this.currentContent, indexesOfKeyword: indexesOfKeyword});
+                    this.$dispatch(dispatchName, {noteEditor: this.editor, indexesOfKeyword: indexesOfKeyword});
                     
                 }                
                 

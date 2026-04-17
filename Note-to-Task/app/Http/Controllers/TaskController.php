@@ -33,7 +33,25 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        request()->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'made_from_note_id' => 'integer|exists:notes,id',
+        ]);
+
+        $task = Task::create([
+            'title' => $request->input('title'),
+            'description' => $request->input('description'),
+            'made_from_note_id' => $request->input('made_from_note_id'),
+        ]);
+
+        if ($task) {
+            return response()->json(['message' => 'Task created successfully', 'id' => $task->id]);
+        } else {
+            return response()->json(['message' => 'Failed to create task']);
+        }
+    
     }
 
     /**
