@@ -22,7 +22,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/note/delete', [NoteController::class, 'destroy'])->name('note.delete');
     // task stuff
     //Route::resource('task', TaskController::class);
-    Route::post('/task/create', [TaskController::class, 'create'])->name('task.create');
+    Route::post('/task/create', [TaskController::class, 'store'])->name('task.create');
     Route::post('/task/update', [TaskController::class, 'update'])->name('task.update');
     Route::post('/task/delete', [TaskController::class, 'destroy'])->name('task.delete');
 

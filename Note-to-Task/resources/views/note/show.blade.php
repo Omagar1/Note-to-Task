@@ -36,7 +36,7 @@
                     <!-- insert search bar code here once made   -->
                     <!-- insert filter code here once made   -->
                 </div>
-                <div  id="taskContainer" x-data="taskActions()" x-init="init({{ $note->id }}, {create: '{{ route("task.create") }}' , update: '{{ route("task.update") }}' , delete: '{{ route("task.delete") }}' }, @json($tasks)) " @task-detected.window ="detectTask($event.detail)" class="grid grid-cols-1"  >
+                <div  id="taskContainer" x-data="taskActions()" x-init=' init({{ $note->id }}, {create: "{{ route("task.create") }}" , update: "{{ route("task.update") }}" , delete: "{{ route("task.delete") }}" }, @json($tasks)) ' @task-detected.window ="detectTask($event.detail)" class="grid grid-cols-1"  >
 
                     <template x-for="task in tasks" :key="task.id">
                         <div>

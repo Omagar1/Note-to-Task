@@ -56,11 +56,18 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
             for(const keyword of this.keywords){
                 
                 let indexesOfKeyword = this.getIndicesOf(keyword, this.currentContent, false);
-                console.log("Indexes: ", indexesOfKeyword);// test
+                //console.log("Indexes: ", indexesOfKeyword);// test
                 
                 if(indexesOfKeyword.length > 0){
                     let dispatchName = keyword.replace(/[:)#-_]/g, "") + "-detected";
-                    console.log("sent to ",dispatchName);
+                    //console.log("sent to ",dispatchName); // test
+
+                    // check if new keyword:
+                    let isNewKeyword = true;
+
+                    // get delta between current and last saved content to see if keyword is new
+
+                    
                     this.$dispatch(dispatchName, {noteEditor: this.editor, indexesOfKeyword: indexesOfKeyword});
                     
                 }                

@@ -20,20 +20,14 @@ class TaskController extends Controller
         
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create(Request $request)
-    {
-        
-    }
+    
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-
+        
         request()->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -51,7 +45,7 @@ class TaskController extends Controller
         } else {
             return response()->json(['message' => 'Failed to create task']);
         }
-    
+        
     }
 
     /**

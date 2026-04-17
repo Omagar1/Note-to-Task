@@ -6,8 +6,7 @@ export default function taskActions(){
         tasks: null,
         csrfToken: null,
         keyword: "task:",
-
-        tempID: 1, 
+        creatingTask: false, // to prevent multiple creations of the same task when the keyword is detected multiple times in a row as the user types
 
         init(noteID, routes, tasks){
             this.noteID = noteID;
@@ -21,16 +20,19 @@ export default function taskActions(){
 
         getTaskData(noteContent, indexesOfKeyword){ // gets data for task
             
-            console.log("Indexes: ", indexesOfKeyword);// test
-            console.log("Current content: ", noteContent);// test
+            //console.log("Indexes: ", indexesOfKeyword);// test
+            //console.log("Current content: ", noteContent);// test
 
             // getting title
             let taskTitleStartIndex = indexesOfKeyword[indexesOfKeyword.length - 1] + this.keyword.length; 
             let taskTitleEndIndex = noteContent.indexOf('<', taskTitleStartIndex);
             let taskTitle = noteContent.substring(taskTitleStartIndex, taskTitleEndIndex).trim();
+            
+            if(taskTitle === ""){
+                taskTitle = "New Task";
+            }
 
-
-            console.log("Task title:", taskTitle);
+            //console.log("Task title:", taskTitle);// test 
 
             // see if task has an id i.e. its in the db already
             // getting tag behind keyword "task:" and see if it has an id
@@ -44,9 +46,9 @@ export default function taskActions(){
             }
             // get id from tag
             let preTagString = preTagChars.join('');
-            console.log("preTagString: ", preTagString); // test
+            //console.log("preTagString: ", preTagString); // test
             let idMatch = preTagString.match(/id="taskRef(\d+)"/);
-            console.log("idMatch: ", idMatch); // test
+            //console.log("idMatch: ", idMatch); // test
             if(idMatch){
                 let taskId = idMatch[1];
                 console.log("Task id: ", taskId);
@@ -61,6 +63,8 @@ export default function taskActions(){
         },
 
         async createTask(taskData, noteData){ // makes task in db and then on front end
+
+            this.creatingTask = true;
             this.$store.savingElement.show();
 
             let noteContent = noteData["noteEditor"].getContent();
@@ -68,7 +72,7 @@ export default function taskActions(){
             // store in db 
             let newId = null; // to hold the new id from the db after creation
             try {
-                
+                console.log("Sending task data to server: ", taskData); // test
                 const response = await fetch(this.routes.create, {
                     method: 'POST',
                     headers: {
@@ -79,16 +83,20 @@ export default function taskActions(){
                     body: JSON.stringify(taskData)
                 });
 
+                const data = await response.json();
+
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    console.log("Validation errors:", data);
+                    throw new Error("Validation failed");
                 }
 
-                const data = await response.json();
-                console.log("Status:", response.status); // test
-                console.log("Response from server: ", data); // test
+                //console.log("Status:", response.status);
+                
+                
+                //console.log("Response from server: ", data); // test
                 newId = data.id;
-                console.log("New task created with id: ", newId); // test 
-                console.log(data.message);
+                //console.log("New task created with id: ", newId); // test 
+                //console.log(data.message);
                 this.$store.savingElement.hide();
             } catch (error) {
                 console.error('Error saving task:', error);
@@ -112,6 +120,9 @@ export default function taskActions(){
             noteData["noteEditor"].selection.select(newTask, true);
             noteData["noteEditor"].selection.collapse(false); // move to end
 
+            console.log("Task created with id: ", newId); // test
+            this.creatingTask = false;
+
         },
 
         detectTask(noteData){ // logic for when a task is detected in the note editor
@@ -121,7 +132,7 @@ export default function taskActions(){
             if (taskData["id"]){
                 console.log("Task already exists with id: ", taskData["id"])
                 // updateTask(taskData, noteData)
-            }else{
+            }else if (!this.creatingTask){ // to prevent multiple creations 
                 this.createTask(taskData, noteData)
             }
         }
