@@ -21,14 +21,14 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                 toolbar: 'undo redo | fontfamily fontsize | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image table | code',
                 setup: (editor) => {
                     this.editor = editor;
-                    editor.on( 'init', () => {
+                    this.editor.on( 'init', () => {
                         if (initialContent) editor.setContent(this.initialContent) ;
                         this.currentContent = editor.getContent();
                         this.lastSavedContent = editor.getContent();
                     });
-                    editor.on('change keyup undo redo', () => {
+                    this.editor.on('change keyup undo redo', () => {
                         console.log('Text changed');
-                        let newContent = editor.getContent();
+                        let newContent = this.editor.getContent();
                         let delta = helperScripts.getDelta(newContent, this.currentContent);
                         console.log("Delta: ", delta);
                         if (delta.text.trim() !== ""){ // if there is a change that is not just whitespace
@@ -42,6 +42,28 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                             this.scheduleSave();
                         }
                     });
+
+                    this.editor.on('arrowright', () => {
+                        // move cursor out of tag when pressing enter inside a tag to prevent issues with keyword detection and tags
+                        
+                        while (node && node.nodeName !== 'SPAN') {
+                            node = node.parentNode;
+                        }
+                        if (node && node.nodeName === 'SPAN') {
+                            const parent = node.parentNode;
+                            const index = this.editor.dom.nodeIndex(node);
+                            
+
+                            // If span is last, create a place for the cursor
+                            if (index === parent.childNodes.length - 1) {
+                                const space = this.editor.dom.createTextNode(' '); // non-breaking space
+                                parent.appendChild(space);
+                            }
+
+                            this.editor.selection.setCursorLocation(parent, index + 1);
+                        }
+                    });
+
                 }
             });
         },

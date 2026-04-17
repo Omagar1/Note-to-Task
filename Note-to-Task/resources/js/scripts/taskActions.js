@@ -3,6 +3,7 @@ import {helperScripts} from './helperScripts';
 export default function taskActions(){
     return {
 
+        updateTimeout: null,
         noteID: null,
         routes: null,
         tasks: null,
@@ -127,9 +128,62 @@ export default function taskActions(){
 
         },
 
-        updateTask(taskData, noteData){ // updates task in db and then on front end
+        scheduleTaskUpdate(noteData){ // to prevent multiple updates when the user is typing and making multiple changes to the task in a short amount of time
+            console.log('Scheduling save');
+            clearTimeout(this.updateTimeout);
+            this.updateTimeout = setTimeout(() => {
+                this.updateTaskInDB(noteData);
+            }, 2000);
+            this.updateTaskOnFrontend(noteData);
 
         },
+
+        updateTaskOnFrontend(noteData){ // updates task on front end and then in db
+            let taskData = this.getTaskData(noteData);
+            // update on front end
+            let taskIndex = this.tasks.findIndex(task => task.id == taskData.id);
+            if (taskIndex !== -1) {
+                this.tasks[taskIndex] = { ...this.tasks[taskIndex], ...taskData };
+            }else{
+                console.log("Task not found in frontend data with id: ", taskData.id); // test
+            }
+
+        },
+        async updateTaskInDB(noteData){ // updates task in db and then on front end
+            let taskData = this.getTaskData(noteData);
+            this.$store.savingElement.show();
+
+            try {
+                //console.log(this.route)
+                const response = await fetch(this.routes.update, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': this.csrfToken
+                    },
+                    body: JSON.stringify(taskData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                console.log(data.message);
+                this.$store.savingElement.hide();
+
+                //this.lastSavedContent = content;
+                
+            } catch (error) {
+                console.error('Error updating task:', error);
+                this.$store.savingElement.hide();
+                // show error notification here once made
+            }
+
+            this.$store.savingElement.hide();
+        },
+        
 
         detectTask(noteData){ // logic for when a task is detected in the note editor
             console.log("task Detected with data:", noteData ); // test
@@ -137,7 +191,7 @@ export default function taskActions(){
             let taskData = this.getTaskData(noteData)
             if (taskData["id"]){
                 console.log("Task already exists with id: ", taskData["id"])
-                this.updateTask(taskData, noteData)
+                this.scheduleTaskUpdate(noteData)
             }else if (!this.creatingTask){ // to prevent multiple creations 
                 this.createTask(taskData, noteData)
             }

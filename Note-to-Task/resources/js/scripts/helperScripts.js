@@ -53,6 +53,11 @@ export const helperScripts = {
 
         //console.log("New content: ", newContent); // test
         //console.log("Old content: ", oldContent); // test
+        if (deltaLength < 0){ // if text was deleted, we want to compare the old content to the new content to get the delta
+            let temp = newContent;
+            newContent = oldContent;
+            oldContent = temp;
+        }
 
         while (newContent[startIndex] === oldContent[startIndex] && startIndex < oldContent.length){
             startIndex++;
