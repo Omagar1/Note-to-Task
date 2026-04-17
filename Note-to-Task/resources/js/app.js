@@ -6,6 +6,7 @@ import noteEditor from './scripts/notesEditor';
 import taskActions from './scripts/taskActions';
 
 
+
 window.Alpine = Alpine
 
 Alpine.data('noteComponents', noteComponents)

@@ -1,3 +1,5 @@
+import {helperScripts} from './helperScripts';
+
 export default function taskActions(){
     return {
 
@@ -18,36 +20,35 @@ export default function taskActions(){
             console.log("tasks: ", this.tasks)
         },
 
-        getTaskData(noteContent, indexesOfKeyword){ // gets data for task
-            
+        
+        getTaskData(noteData){ // gets data for task
+            let noteContent = noteData["noteEditor"].getContent();
+            let indexesOfKeyword = helperScripts.getIndicesOf(this.keyword, noteContent, false);
+
             //console.log("Indexes: ", indexesOfKeyword);// test
             //console.log("Current content: ", noteContent);// test
 
             // getting title
+            console.log("indexesOfKeyword: ", indexesOfKeyword);
             let taskTitleStartIndex = indexesOfKeyword[indexesOfKeyword.length - 1] + this.keyword.length; 
             let taskTitleEndIndex = noteContent.indexOf('<', taskTitleStartIndex);
             let taskTitle = noteContent.substring(taskTitleStartIndex, taskTitleEndIndex).trim();
             
-            if(taskTitle === ""){
+            if(taskTitle === "" || taskTitle === "&nbsp;"){ // if there is no title after the keyword, give it a default title
                 taskTitle = "New Task";
             }
 
-            //console.log("Task title:", taskTitle);// test 
+            console.log("Task title:", taskTitle);// test 
 
             // see if task has an id i.e. its in the db already
             // getting tag behind keyword "task:" and see if it has an id
 
             // find tag
-            let prevCharIndex = indexesOfKeyword[indexesOfKeyword.length - 1];
-            let preTagChars = [];
-            while ( noteContent[prevCharIndex] !== '<' && prevCharIndex > 0 ){
-                preTagChars.unshift(noteContent[prevCharIndex]);
-                prevCharIndex--;
-            }
+            let prevTagString = helperScripts.getPrevTag(noteContent, indexesOfKeyword);
+
             // get id from tag
-            let preTagString = preTagChars.join('');
-            //console.log("preTagString: ", preTagString); // test
-            let idMatch = preTagString.match(/id="taskRef(\d+)"/);
+            console.log("prevTagString: ", prevTagString); // test
+            let idMatch = prevTagString.match(/id="taskRef(\d+)"/);
             //console.log("idMatch: ", idMatch); // test
             if(idMatch){
                 let taskId = idMatch[1];
@@ -68,6 +69,7 @@ export default function taskActions(){
             this.$store.savingElement.show();
 
             let noteContent = noteData["noteEditor"].getContent();
+            let indexesOfKeyword = helperScripts.getIndicesOf(this.keyword, noteContent, false);
             
             // store in db 
             let newId = null; // to hold the new id from the db after creation
@@ -110,7 +112,7 @@ export default function taskActions(){
             this.tasks.push(taskData);
             // set id in note editor
             //const cursorPos = noteData["noteEditor"].selection.getBookmark(); // to save the cursor position so we can put it back after changing the content and losing the cursor position
-            let taskStartIndex = noteData["indexesOfKeyword"][noteData["indexesOfKeyword"].length - 1]; // to get the start place to put a new tag
+            let taskStartIndex = indexesOfKeyword[indexesOfKeyword.length - 1] // to get the start place to put a new tag
             let taskEndIndex = noteContent.indexOf('<', taskStartIndex); // to get the start place to put a new tag
             let newNoteContent = noteContent.substring(0, taskStartIndex) + `<span class="task" id="taskRef${newId}">` + noteContent.substring(taskStartIndex, taskEndIndex) + `</span>` + noteContent.substring(taskEndIndex);
             noteData["noteEditor"].setContent(newNoteContent);
@@ -125,13 +127,17 @@ export default function taskActions(){
 
         },
 
+        updateTask(taskData, noteData){ // updates task in db and then on front end
+
+        },
+
         detectTask(noteData){ // logic for when a task is detected in the note editor
-            console.log("task Detected with data:", noteData )
-            let noteContent = noteData["noteEditor"].getContent();
-            let taskData = this.getTaskData(noteContent, noteData["indexesOfKeyword"])
+            console.log("task Detected with data:", noteData ); // test
+            
+            let taskData = this.getTaskData(noteData)
             if (taskData["id"]){
                 console.log("Task already exists with id: ", taskData["id"])
-                // updateTask(taskData, noteData)
+                this.updateTask(taskData, noteData)
             }else if (!this.creatingTask){ // to prevent multiple creations 
                 this.createTask(taskData, noteData)
             }

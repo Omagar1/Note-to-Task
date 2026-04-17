@@ -1,5 +1,5 @@
 import { stringify } from "postcss";
-
+import {helperScripts} from './helperScripts';
 
 export default function noteEditor({ initialContent, noteId, route, csrfToken} ) {
     return {
@@ -22,40 +22,35 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                 setup: (editor) => {
                     this.editor = editor;
                     editor.on( 'init', () => {
-                        if (initialContent) editor.setContent(this.initialContent)
+                        if (initialContent) editor.setContent(this.initialContent) ;
+                        this.currentContent = editor.getContent();
+                        this.lastSavedContent = editor.getContent();
                     });
                     editor.on('change keyup undo redo', () => {
                         console.log('Text changed');
-                        this.currentContent = editor.getContent();
-                        this.checkForKeywords();
-                        this.scheduleSave();
+                        let newContent = editor.getContent();
+                        let delta = helperScripts.getDelta(newContent, this.currentContent);
+                        console.log("Delta: ", delta);
+                        if (delta.text.trim() !== ""){ // if there is a change that is not just whitespace
+                            console.log("getPrevTagIndex: ", helperScripts.getPrevTagIndex(newContent, delta.startIndex));
+                            console.log("getNextTagIndex: ", helperScripts.getNextTagIndex(newContent, delta.endIndex));
+
+                            let deltaEffectArea = newContent.substring(helperScripts.getPrevTagIndex(newContent, delta.startIndex),  helperScripts.getNextTagIndex(newContent, delta.endIndex)); // the part of the content that was changed to check for keywords in including tags
+                            console.log("Delta effect area: ", deltaEffectArea);
+                            this.checkForKeywords(deltaEffectArea);
+                            this.currentContent = newContent;
+                            this.scheduleSave();
+                        }
                     });
                 }
             });
         },
 
-        getIndicesOf(searchStr, str, caseSensitive) { // from https://stackoverflow.com/questions/3410464/how-to-find-indices-of-all-occurrences-of-one-string-in-another-in-javascript
-            var searchStrLen = searchStr.length;
-            if (searchStrLen == 0) {
-                return [];
-            }
-            var startIndex = 0, index, indices = [];
-            if (!caseSensitive) {
-                str = str.toLowerCase();
-                searchStr = searchStr.toLowerCase();
-            }
-            while ((index = str.indexOf(searchStr, startIndex)) > -1) {
-                indices.push(index);
-                startIndex = index + searchStrLen;
-            }
-            return indices;
-        },
-
-        checkForKeywords() {
+        checkForKeywords(checkStr) { // and trigger their actions if found
             //console.log(typeof(this.currentContent))
             for(const keyword of this.keywords){
                 
-                let indexesOfKeyword = this.getIndicesOf(keyword, this.currentContent, false);
+                let indexesOfKeyword = helperScripts.getIndicesOf(keyword, checkStr, false);
                 //console.log("Indexes: ", indexesOfKeyword);// test
                 
                 if(indexesOfKeyword.length > 0){
@@ -65,10 +60,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                     // check if new keyword:
                     let isNewKeyword = true;
 
-                    // get delta between current and last saved content to see if keyword is new
-
-                    
-                    this.$dispatch(dispatchName, {noteEditor: this.editor, indexesOfKeyword: indexesOfKeyword});
+                    this.$dispatch(dispatchName, {noteEditor: this.editor});
                     
                 }                
                 
