@@ -39,6 +39,9 @@ export default function taskActions(){
                 taskTitle = "New Task";
             }
 
+            taskTitle = taskTitle.replace(/&nbsp;/g, ' '); // replace &nbsp; with regular spaces
+            taskTitle = taskTitle.replace(/<br>/g, ' '); // replace <br> with regular spaces
+            taskTitle = taskTitle.trim(); // replace <div> with regular spaces
             console.log("Task title:", taskTitle);// test 
 
             // see if task has an id i.e. its in the db already
@@ -65,7 +68,7 @@ export default function taskActions(){
         },
 
         async createTask(taskData, noteData){ // makes task in db and then on front end
-
+            console.log("Creating task with data: ", taskData); // test
             this.creatingTask = true;
             this.$store.savingElement.show();
 
@@ -138,7 +141,7 @@ export default function taskActions(){
 
         },
 
-        updateTaskOnFrontend(noteData){ // updates task on front end and then in db
+        updateTaskOnFrontend(noteData){ 
             let taskData = this.getTaskData(noteData);
             // update on front end
             let taskIndex = this.tasks.findIndex(task => task.id == taskData.id);
@@ -149,7 +152,7 @@ export default function taskActions(){
             }
 
         },
-        async updateTaskInDB(noteData){ // updates task in db and then on front end
+        async updateTaskInDB(noteData){ 
             let taskData = this.getTaskData(noteData);
             this.$store.savingElement.show();
 
@@ -183,18 +186,78 @@ export default function taskActions(){
 
             this.$store.savingElement.hide();
         },
+
+        scheduleTaskDeletion(noteData){ // to prevent multiple updates when the user is typing and making multiple changes to the task in a short amount of time
+            console.log('Scheduling save');
+            clearTimeout(this.updateTimeout);
+            this.updateTimeout = setTimeout(() => {
+                this.deleteTaskInDB(noteData);
+            }, 2000);
+            this.deleteTaskOnFrontend(noteData);
+
+        },
+
+        deleteTaskOnFrontend(noteData){ 
+            // update on front end
+            let taskIndex = this.tasks.findIndex(task => task.id == noteData["taskId"]);
+            if (taskIndex !== -1) {
+                this.tasks.splice(taskIndex, 1);
+            }else{
+                console.log("Task not found in frontend data with id: ", noteData["taskId"]); // test
+            }
+
+        },
+        async deleteTaskInDB(noteData){ 
+            this.$store.savingElement.show();
+
+            try {
+                //console.log(this.route)
+                const response = await fetch(this.routes.delete, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': this.csrfToken
+                    },
+                    body: JSON.stringify({ id: noteData["taskId"] })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                console.log(data.message);
+                this.$store.savingElement.hide();
+
+                //this.lastSavedContent = content;
+                
+            } catch (error) {
+                console.error('Error deleting task:', error);
+                this.$store.savingElement.hide();
+                // show error notification here once made
+            }
+
+            this.$store.savingElement.hide();
+        },
+
         
 
         detectTask(noteData){ // logic for when a task is detected in the note editor
             console.log("task Detected with data:", noteData ); // test
-            
-            let taskData = this.getTaskData(noteData)
-            if (taskData["id"]){
-                console.log("Task already exists with id: ", taskData["id"])
-                this.scheduleTaskUpdate(noteData)
-            }else if (!this.creatingTask){ // to prevent multiple creations 
-                this.createTask(taskData, noteData)
+            if (noteData["deleting"] == true){ 
+                this.scheduleTaskDeletion(noteData);
+
+            } else {
+                let taskData = this.getTaskData(noteData)
+                if (taskData["id"]){
+                    console.log("Task already exists with id: ", taskData["id"])
+                    this.scheduleTaskUpdate(noteData)
+                }else if (!this.creatingTask){ // to prevent multiple creations 
+                    this.createTask(taskData, noteData)
+                }
             }
+            
         }
 
     }

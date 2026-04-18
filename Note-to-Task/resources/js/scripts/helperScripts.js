@@ -46,31 +46,39 @@ export const helperScripts = {
     },
     
     getDelta(newContent, oldContent){
-        
-        let startIndex = 0;
-        let deltaLength = newContent.length - oldContent.length;
-        let endIndex = newContent.length - 1;
 
-        //console.log("New content: ", newContent); // test
-        //console.log("Old content: ", oldContent); // test
+        let deltaLength = newContent.length - oldContent.length;
+
         if (deltaLength < 0){ // if text was deleted, we want to compare the old content to the new content to get the delta
             let temp = newContent;
             newContent = oldContent;
             oldContent = temp;
         }
+        let startIndex = 0;
+        let endIndex = newContent.length - 1;
+
+        // console.log("Delta length: ", deltaLength); // test
+        // console.log("startIndex: ", startIndex); // test
+        // console.log("endIndex: ", endIndex); // test
+
+        // console.log("New content: ", newContent); // test
+        // console.log("Old content: ", oldContent); // test
+        
 
         while (newContent[startIndex] === oldContent[startIndex] && startIndex < oldContent.length){
             startIndex++;
         }
         
         
-        while (newContent[endIndex] === oldContent[oldContent.length - (newContent.length - endIndex)] && endIndex > startIndex){
+        while (newContent[endIndex] === oldContent[endIndex] && endIndex > startIndex){
             endIndex--;
         }
         
-        let deltaText = newContent.substring(startIndex, endIndex + 1);
-        console.log("Delta: ", deltaText);
-        return {text: deltaText, startIndex: startIndex, endIndex: endIndex};
+        endIndex++; // to get the index after the last changed character
+        let deltaText = newContent.substring(startIndex, endIndex);
+        //console.log("Delta: ", deltaText); // test
+        endIndex = Math.max(endIndex, 0); // to prevent issues when deleting at the end of the content
+        return {text: deltaText, startIndex: startIndex, endIndex: endIndex, deltaLength: deltaLength};
     },
 
     getIndicesOf(searchStr, str, caseSensitive) { // from https://stackoverflow.com/questions/3410464/how-to-find-indices-of-all-occurrences-of-one-string-in-another-in-javascript
