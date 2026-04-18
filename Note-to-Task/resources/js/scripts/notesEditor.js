@@ -55,26 +55,26 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                         }
                     });
 
-                    this.editor.on('arrowright', () => {
-                        // move cursor out of tag when pressing enter inside a tag to prevent issues with keyword detection and tags
+                    // this.editor.on('arrowright', () => {
+                    //     // move cursor out of tag when pressing enter inside a tag to prevent issues with keyword detection and tags
                         
-                        while (node && node.nodeName !== 'SPAN') {
-                            node = node.parentNode;
-                        }
-                        if (node && node.nodeName === 'SPAN') {
-                            const parent = node.parentNode;
-                            const index = this.editor.dom.nodeIndex(node);
+                    //     while (node && node.nodeName !== 'SPAN') {
+                    //         node = node.parentNode;
+                    //     }
+                    //     if (node && node.nodeName === 'SPAN') {
+                    //         const parent = node.parentNode;
+                    //         const index = this.editor.dom.nodeIndex(node);
                             
 
-                            // If span is last, create a place for the cursor
-                            if (index === parent.childNodes.length - 1) {
-                                const space = this.editor.dom.createTextNode(' '); // non-breaking space
-                                parent.appendChild(space);
-                            }
+                    //         // If span is last, create a place for the cursor
+                    //         if (index === parent.childNodes.length - 1) {
+                    //             const space = this.editor.dom.createTextNode(' '); // non-breaking space
+                    //             parent.appendChild(space);
+                    //         }
 
-                            this.editor.selection.setCursorLocation(parent, index + 1);
-                        }
-                    });
+                    //         this.editor.selection.setCursorLocation(parent, index + 1);
+                    //     }
+                    // });
 
                 }
             });
@@ -84,26 +84,30 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
             //console.log(typeof(this.currentContent))
             for(const keyword of this.keywords){
                 
+                console.log("checkStr: ", checkStr); // test
                 let indexesOfKeyword = helperScripts.getIndicesOf(keyword, checkStr, false);
                 console.log("Indexes: ", indexesOfKeyword);// test
                 
                 let dispatchName = keyword.replace(/[:)#-_]/g, "") + "-detected";
                 //console.log("sent to ",dispatchName); // test
 
-                let keywordRegex = new RegExp(keyword.replace(/[:)#-_]/g, "") + "Ref(\\d+)", "g"); // escape special characters in keyword for regex
-                console.log("keywordRegex: ", keywordRegex); // test
-                let keywordIdMatch = checkStr.match(keywordRegex);
-                console.log("keywordIdMatch: ", keywordIdMatch); // test
+                let keywordRefRegex = new RegExp(keyword.replace(/[:)#-_]/g, "") + "Ref(\\d+)", "g"); // escape special characters in keyword for regex
+                let keywordRegex = new RegExp(keyword.replace(/[:)#-_]/g, "\\$&"), "g"); // escape special characters in keyword for regex
+                console.log("keywordRefRegex: ", keywordRefRegex); // test
+                let keywordInDelta = delta.text.match(keywordRefRegex);
+                let keywordInCheckStr = checkStr.match(keywordRegex);
+                console.log("keywordInDelta: ", keywordInDelta); // test
+                console.log("keywordInCheckStr: ", keywordInCheckStr); // test
 
-                if(indexesOfKeyword.length > 0 && delta.deltaLength > 0){
+                if(indexesOfKeyword.length > 0 && keywordInCheckStr){ 
                     // creating or updating a task
                     console.log("Keyword detected: ", keyword);
                     this.$dispatch(dispatchName, {deleting: false, noteEditor: this.editor});
                     
-                } else if (keywordIdMatch && delta.deltaLength < 0){ 
+                } else if (keywordInDelta && delta.deltaLength < 0){
                     console.log("Keyword to be removed: ", keyword);
 
-                    let keywordId = keywordIdMatch[0].replace(keyword.replace(/[:)#-_]/g, "")  + "Ref", ''); 
+                    let keywordId = keywordInDelta[0].replace(keyword.replace(/[:)#-_]/g, "")  + "Ref", ''); 
                     console.log("Keyword id to delete: ", keywordId);
                     this.$dispatch(dispatchName, {deleting: true, taskId: keywordId});
                 }              
