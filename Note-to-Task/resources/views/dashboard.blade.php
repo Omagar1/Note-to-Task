@@ -14,7 +14,7 @@
                 <!-- insert filter code here once made   -->
             </div>
             @foreach( $notes as $note)
-                <div x-data="noteComponents({{ $note }})"  x-ref ="note{{ $note->id }}" x-show="!deleted"class="w-full flex items-start justify-start gap-1 transition-all transition-discrete duration-300 ease-in-out" >
+                <div x-data="noteComponents({{ $note }})"  x-ref ="note{{ $note->id }}" x-show="!deleted" class="w-full flex items-start justify-start gap-1 transition-all transition-discrete duration-300 ease-in-out" >
                     <a href="{{ route('note.show', ['note' => $note]) }}" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-2" >
                         <div class="flex gap-4 items-start justify-start content-center"> 
                             <p class= "text-base">{{ $note->title }}</p> 
