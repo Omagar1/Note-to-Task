@@ -3,7 +3,6 @@ import {helperScripts} from './helperScripts';
 export default function taskActions(){
     return {
 
-        updateTimeout: null,
         noteID: null,
         routes: null,
         tasks: null,
@@ -133,8 +132,8 @@ export default function taskActions(){
 
         scheduleTaskUpdate(noteData){ // to prevent multiple updates when the user is typing and making multiple changes to the task in a short amount of time
             console.log('Scheduling save');
-            clearTimeout(this.updateTimeout);
-            this.updateTimeout = setTimeout(() => {
+            clearTimeout(this.$store.savingElement.timeout);
+            this.$store.savingElement.timeout = setTimeout(() => {
                 this.updateTaskInDB(noteData);
             }, 2000);
             this.updateTaskOnFrontend(noteData);
@@ -189,8 +188,8 @@ export default function taskActions(){
 
         scheduleTaskDeletion(noteData){ // to prevent multiple updates when the user is typing and making multiple changes to the task in a short amount of time
             console.log('Scheduling save');
-            clearTimeout(this.updateTimeout);
-            this.updateTimeout = setTimeout(() => {
+            clearTimeout(this.$store.savingElement.timeout);
+            this.$store.savingElement.timeout = setTimeout(() => {
                 this.deleteTaskInDB(noteData);
             }, 2000);
             this.deleteTaskOnFrontend(noteData);
