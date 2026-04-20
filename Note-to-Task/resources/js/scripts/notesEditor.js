@@ -99,18 +99,18 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                 console.log("keywordInDelta: ", keywordInDelta); // test
                 console.log("keywordInCheckStr: ", keywordInCheckStr); // test
 
-                if(indexesOfKeyword.length > 0 && keywordInCheckStr){ 
+                if (keywordInDelta && delta.deltaLength < 0){
+                    // deleting a keyword - trigger deletion of task
+                    console.log("Keyword to be removed: ", keyword);
+                    let keywordId = keywordInDelta[0].replace(keyword.replace(/[:)#-_]/g, "")  + "Ref", ''); 
+                    console.log("Keyword id to delete: ", keywordId);
+                    this.$dispatch(dispatchName, {deleting: true, taskId: keywordId});
+                } else if(indexesOfKeyword.length > 0 && keywordInCheckStr){ 
                     // creating or updating a task
                     console.log("Keyword detected: ", keyword);
                     this.$dispatch(dispatchName, {deleting: false, noteEditor: this.editor});
                     
-                } else if (keywordInDelta && delta.deltaLength < 0){
-                    console.log("Keyword to be removed: ", keyword);
-
-                    let keywordId = keywordInDelta[0].replace(keyword.replace(/[:)#-_]/g, "")  + "Ref", ''); 
-                    console.log("Keyword id to delete: ", keywordId);
-                    this.$dispatch(dispatchName, {deleting: true, taskId: keywordId});
-                }              
+                }           
                 
             }
         },
