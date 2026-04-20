@@ -76,6 +76,7 @@ export const helperScripts = {
         
         endIndex++; // to get the index after the last changed character
         let deltaText = newContent.substring(startIndex, endIndex);
+    
         //console.log("Delta: ", deltaText); // test
         endIndex = Math.max(endIndex, 0); // to prevent issues when deleting at the end of the content
         return {text: deltaText, startIndex: startIndex, endIndex: endIndex, deltaLength: deltaLength};

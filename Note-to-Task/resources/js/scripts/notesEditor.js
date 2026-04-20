@@ -35,28 +35,11 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                             let newContent = this.editor.getContent();
                             let delta = helperScripts.getDelta(newContent, this.currentContent);
                             console.log("Delta: ", delta);
-                            if (delta.deltaLength  > 0 ){ // if there is a change that is not just whitespace
 
-                                console.log("adding or updating ");
-                                console.log("getPrevTagIndex: ", helperScripts.getPrevTagIndex(newContent, delta.startIndex));
-                                console.log("getNextTagIndex: ", helperScripts.getNextTagIndex(newContent, delta.endIndex));
+                            this.checkForKeywords(newContent, delta);
+                            this.currentContent = newContent;
+                            this.scheduleSave();
 
-                                let deltaEffectArea = newContent.substring(helperScripts.getPrevTagIndex(newContent, delta.startIndex),  helperScripts.getNextTagIndex(newContent, delta.endIndex)); // the part of the content that was changed to check for keywords in including tags
-                                console.log("Delta effect area: ", deltaEffectArea);
-                                this.checkForKeywords(deltaEffectArea, delta);
-                                this.currentContent = newContent;
-                                this.scheduleSave();
-                            } else if (delta.deltaLength  < 0){
-                                console.log("deleting ");
-                                console.log("getPrevTagIndex: ", helperScripts.getPrevTagIndex(this.currentContent, delta.startIndex));
-                                console.log("getNextTagIndex: ", helperScripts.getNextTagIndex(this.currentContent, delta.endIndex));
-
-                                let deltaEffectArea = this.currentContent.substring(helperScripts.getPrevTagIndex(this.currentContent, delta.startIndex),  helperScripts.getNextTagIndex(this.currentContent, delta.endIndex)); // the part of the content that was changed to check for keywords in including tags
-                                console.log("Delta effect area: ", delta);
-                                this.checkForKeywords(deltaEffectArea, delta);
-                                this.currentContent = newContent;
-                                this.scheduleSave();
-                            }
                         }, 1000);
                         
                         //this.cleanUp();
@@ -87,45 +70,76 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
             });
         },
 
-        checkForKeywords(checkStr, delta) { // and trigger their actions if found
+        checkForKeywords(newContent, delta) { // and trigger their actions if found
             //console.log(typeof(this.currentContent))
-            for(const keyword of this.keywords){
-                
-                console.log("checkStr: ", checkStr); // test
+            // splitting delta text into an array by new lines to check for keywords in each line separately to prevent issues with multiple keywords in different lines being detected as one keyword when they are on different lines but the same keyword is on both lines
+            let deltaTextArray = delta.text.split('\n');
+            console.log("Delta text array: ", deltaTextArray); // test
+
+            let startIndex = delta.startIndex;
             
-                
-                let dispatchName = keyword.replace(/[:)#-_]/g, "") + "-detected";
-                //console.log("sent to ",dispatchName); // test
 
-                let keywordRefRegex = new RegExp(keyword.replace(/[:)#-_]/g, "") + "Ref(\\d+)", "g"); // escape special characters in keyword for regex
-                let keywordRegex = new RegExp(keyword.replace(/[:)#-_]/g, "\\$&"), "g"); // escape special characters in keyword for regex
-                console.log("keywordRefRegex: ", keywordRefRegex); // test
+            for (let i = 0; i < deltaTextArray.length; i++) {
 
-            
-                let keywordRefInCheckStr = checkStr.match(keywordRefRegex);
-                let keywordInDelta = delta.text.match(keywordRegex);
+                let endIndex = delta.startIndex + deltaTextArray[i].length; // to get the correct end index for each line in the delta text array
 
-                console.log("keywordRefInCheckStr: ", keywordRefInCheckStr); // test
-                console.log("keywordInDelta: ", keywordInDelta); // test
+                let deltaEffectArea = ""; // the part of the content that was changed to check for keywords in including tags
+                // find delta effect area to check for keywords in including tags - if there is a change that is not just whitespace
+                if (delta.deltaLength  > 0 ){ 
+                    console.log("getPrevTagIndex: ", helperScripts.getPrevTagIndex(newContent, startIndex));
+                    console.log("getNextTagIndex: ", helperScripts.getNextTagIndex(newContent, endIndex));
 
-                if (keywordInDelta && keywordRefInCheckStr && delta.deltaLength < 0){
-                    // deleting a keyword - trigger deletion of task
-        
-                    let keywordId = keywordRefInCheckStr[0].replace(keyword.replace(/[:)#-_]/g, "") + "Ref", ''); 
-                    console.log("Deleting ", keyword, " with id: ", keywordId);
-                    this.$dispatch(dispatchName, {keyword: keyword, operation: "delete", id: keywordId});
-                }else if (keywordRefInCheckStr){
-                    // updating a keyword 
-                    let keywordId = keywordRefInCheckStr[0].replace(keyword.replace(/[:)#-_]/g, "") + "Ref", '');
-                    console.log("updating ", keyword, " with id: ", keywordId);
-                    this.$dispatch(dispatchName, {keyword: keyword, operation: "update", id: keywordId, noteEditor: this.editor});
-                } else if(keywordInDelta && !keywordRefInCheckStr && delta.deltaLength > 0){ 
-                    // creating or updating a task
-                    console.log("creating a new ", keyword);
-                    this.$dispatch(dispatchName, {keyword: keyword, operation: "create", noteEditor: this.editor});
+                    let deltaEffectArea = newContent.substring(helperScripts.getPrevTagIndex(newContent, startIndex),  helperScripts.getNextTagIndex(newContent, endIndex)); // the part of the content that was changed to check for keywords in including tags
+                    console.log("Delta effect area: ", deltaEffectArea);
+                } else if (delta.deltaLength  < 0){
+
+                    console.log("getPrevTagIndex: ", helperScripts.getPrevTagIndex(this.currentContent, startIndex));
+                    console.log("getNextTagIndex: ", helperScripts.getNextTagIndex(this.currentContent, endIndex));
+
+                    let deltaEffectArea = this.currentContent.substring(helperScripts.getPrevTagIndex(this.currentContent, startIndex),  helperScripts.getNextTagIndex(this.currentContent, endIndex)); // the part of the content that was changed to check for keywords in including tags
+                    console.log("Delta effect area: ", deltaEffectArea);   
+                }
+
+
+                for(const keyword of this.keywords){
                     
-                }           
+                    console.log("deltaEffectArea: ", deltaEffectArea); // test
                 
+                    let dispatchName = keyword.replace(/[:)#-_]/g, "") + "-detected";
+                    //console.log("sent to ",dispatchName); // test
+
+                    let keywordRefRegex = new RegExp(keyword.replace(/[:)#-_]/g, "") + "Ref(\\d+)", "g"); // escape special characters in keyword for regex
+                    let keywordRegex = new RegExp(keyword.replace(/[:)#-_]/g, "\\$&"), "g"); // escape special characters in keyword for regex
+                    console.log("keywordRefRegex: ", keywordRefRegex); // test
+
+                
+                    let keywordRefInDEA = deltaEffectArea.match(keywordRefRegex);
+                    let keywordInDelta = deltaTextArray[i].match(keywordRegex);
+
+                    console.log("keywordRefInDEA: ", keywordRefInDEA); // test
+                    console.log("keywordInDelta: ", keywordInDelta); // test
+
+                    if (keywordInDelta && keywordRefInDEA && delta.deltaLength < 0){
+                        // deleting a keyword - trigger deletion of task
+            
+                        let keywordId = keywordRefInDEA[0].replace(keyword.replace(/[:)#-_]/g, "") + "Ref", ''); 
+                        console.log("Deleting ", keyword, " with id: ", keywordId);
+                        this.$dispatch(dispatchName, {keyword: keyword, operation: "delete", id: keywordId});
+                    }else if (keywordRefInDEA){
+                        // updating a keyword 
+                        let keywordId = keywordRefInDEA[0].replace(keyword.replace(/[:)#-_]/g, "") + "Ref", '');
+                        console.log("updating ", keyword, " with id: ", keywordId);
+                        this.$dispatch(dispatchName, {keyword: keyword, operation: "update", id: keywordId, noteEditor: this.editor});
+                    } else if(keywordInDelta && !keywordRefInDEA && delta.deltaLength > 0){ 
+                        // creating or updating a task
+                        console.log("creating a new ", keyword);
+                        this.$dispatch(dispatchName, {keyword: keyword, operation: "create", noteEditor: this.editor});
+                        
+                    }           
+                    
+                }
+
+                startIndex = endIndex; 
             }
         },
 
@@ -187,7 +201,6 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
 
             this.currentContent = this.currentContent.replace(tagsToRemove, '');
             this.editor.setContent(this.currentContent);
-
         }
         
     }
