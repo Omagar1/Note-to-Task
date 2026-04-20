@@ -92,8 +92,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
             for(const keyword of this.keywords){
                 
                 console.log("checkStr: ", checkStr); // test
-                let indexesOfKeyword = helperScripts.getIndicesOf(keyword, checkStr, false);
-                console.log("Indexes: ", indexesOfKeyword);// test
+            
                 
                 let dispatchName = keyword.replace(/[:)#-_]/g, "") + "-detected";
                 //console.log("sent to ",dispatchName); // test
@@ -101,26 +100,29 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                 let keywordRefRegex = new RegExp(keyword.replace(/[:)#-_]/g, "") + "Ref(\\d+)", "g"); // escape special characters in keyword for regex
                 let keywordRegex = new RegExp(keyword.replace(/[:)#-_]/g, "\\$&"), "g"); // escape special characters in keyword for regex
                 console.log("keywordRefRegex: ", keywordRefRegex); // test
-                let keywordRefInDelta = delta.text.match(keywordRefRegex);
+
+            
                 let keywordRefInCheckStr = checkStr.match(keywordRefRegex);
+                let keywordInDelta = delta.text.match(keywordRegex);
 
-                let keywordInCheckStr = checkStr.match(keywordRegex);
+                console.log("keywordRefInCheckStr: ", keywordRefInCheckStr); // test
                 console.log("keywordInDelta: ", keywordInDelta); // test
-                console.log("keywordInCheckStr: ", keywordInCheckStr); // test
 
-                if (keywordRefInDelta && !keywordInCheckStr && delta.deltaLength < 0){
+                if (keywordInDelta && keywordRefInCheckStr && delta.deltaLength < 0){
                     // deleting a keyword - trigger deletion of task
-                    console.log("Keyword to be removed: ", keyword);
-                    let keywordId = keywordRefInDelta[0].replace(keyword.replace(/[:)#-_]/g, "")  + "Ref", ''); 
-                    console.log("Keyword id to delete: ", keywordId);
-                    this.$dispatch(dispatchName, {operation: "delete", taskId: keywordId});
-                }else if (keywordRefInDelta){
+        
+                    let keywordId = keywordRefInCheckStr[0].replace(keyword.replace(/[:)#-_]/g, "") + "Ref", ''); 
+                    console.log("Deleting ", keyword, " with id: ", keywordId);
+                    this.$dispatch(dispatchName, {keyword: keyword, operation: "delete", id: keywordId});
+                }else if (keywordRefInCheckStr){
                     // updating a keyword 
-                    this.$dispatch(dispatchName, {operation: "update", noteEditor: this.editor});
-                } else if(indexesOfKeyword.length > 0 && keywordInCheckStr){ 
+                    let keywordId = keywordRefInCheckStr[0].replace(keyword.replace(/[:)#-_]/g, "") + "Ref", '');
+                    console.log("updating ", keyword, " with id: ", keywordId);
+                    this.$dispatch(dispatchName, {keyword: keyword, operation: "update", id: keywordId, noteEditor: this.editor});
+                } else if(keywordInDelta && !keywordRefInCheckStr && delta.deltaLength > 0){ 
                     // creating or updating a task
-                    console.log("Keyword detected: ", keyword);
-                    this.$dispatch(dispatchName, {operation: "create", noteEditor: this.editor});
+                    console.log("creating a new ", keyword);
+                    this.$dispatch(dispatchName, {keyword: keyword, operation: "create", noteEditor: this.editor});
                     
                 }           
                 

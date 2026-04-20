@@ -23,6 +23,8 @@ export default function taskActions(){
         
         getTaskData(noteData){ // gets data for task
             let noteContent = noteData["noteEditor"].getContent();
+            let taskId = noteData["id"] ? noteData["id"] : null; // to get the id of the task if it already exists for updating, otherwise it will be null for creating a new task
+
             let indexesOfKeyword = helperScripts.getIndicesOf(this.keyword, noteContent, false);
 
             //console.log("Indexes: ", indexesOfKeyword);// test
@@ -42,28 +44,13 @@ export default function taskActions(){
             taskTitle = taskTitle.replace(/<br>/g, ' '); // replace <br> with regular spaces
             taskTitle = taskTitle.trim(); // replace <div> with regular spaces
             console.log("Task title:", taskTitle);// test 
-
-            // see if task has an id i.e. its in the db already
-            // getting tag behind keyword "task:" and see if it has an id
-
-            // find tag
-            let prevTagString = helperScripts.getPrevTag(noteContent, indexesOfKeyword);
-
-            // get id from tag
-            console.log("prevTagString: ", prevTagString); // test
-            let idMatch = prevTagString.match(/id="taskRef(\d+)"/);
-            //console.log("idMatch: ", idMatch); // test
-            if(idMatch){
-                let taskId = idMatch[1];
-                console.log("Task id: ", taskId);
-                return {id: taskId, title: taskTitle}
-            }
+            
             // seeing if task is a sub task by looking for a parent task tag before it and seeing if it has an id
                 // jk not yet 
 
             // not getting extraInfo or deadline as these are done by their own Actions class
 
-            return {title: taskTitle, made_from_note_id: this.noteID}
+            return {id: taskId, title: taskTitle, made_from_note_id: this.noteID}
         },
 
         async createTask(taskData, noteData){ // makes task in db and then on front end
@@ -198,11 +185,11 @@ export default function taskActions(){
 
         deleteTaskOnFrontend(noteData){ 
             // update on front end
-            let taskIndex = this.tasks.findIndex(task => task.id == noteData["taskId"]);
+            let taskIndex = this.tasks.findIndex(task => task.id == noteData["id"]);
             if (taskIndex !== -1) {
                 this.tasks.splice(taskIndex, 1);
             }else{
-                console.log("Task not found in frontend data with id: ", noteData["taskId"]); // test
+                console.log("Task not found in frontend data with id: ", noteData["id"]); // test
             }
 
         },
@@ -244,22 +231,15 @@ export default function taskActions(){
 
         detectTask(noteData){ // logic for when a task is detected in the note editor
             console.log("task Detected with data:", noteData ); // test
-            if (noteData["deleting"] == true){ 
+            if (noteData["operation"] == "delete"){ 
                 this.scheduleTaskDeletion(noteData);
-
-            } else {
-                let taskData = this.getTaskData(noteData)
-                if (taskData["id"]){
-                    console.log("Task already exists with id: ", taskData["id"])
-                    this.scheduleTaskUpdate(noteData)
-                }else if (!this.creatingTask){ // to prevent multiple creations 
-                    this.createTask(taskData, noteData)
-                }
+            } else if (noteData["operation"] == "update"){
+                this.scheduleTaskUpdate(noteData);
+            } else if (noteData["operation"] == "create" && !this.creatingTask){ // to prevent multiple creations 
+                let taskData = this.getTaskData(noteData);
+                this.createTask(taskData, noteData);
             }
-            
         }
-
     }
-
 } 
 
