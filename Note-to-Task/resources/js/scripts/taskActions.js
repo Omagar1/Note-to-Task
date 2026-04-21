@@ -6,6 +6,7 @@ export default function taskActions(){
         noteID: null,
         routes: null,
         tasks: null,
+        taskCreationQueue: [], // to hold task creations that are triggered while a task creation is already in progress
         csrfToken: null,
         keyword: "task:",
         creatingTask: false, // to prevent multiple creations of the same task when the keyword is detected multiple times in a row as the user types
@@ -116,9 +117,17 @@ export default function taskActions(){
             this.creatingTask = false;
 
             document.dispatchEvent(new CustomEvent('task-created', { detail: { taskId: newId, noteId: this.noteID } })); // to notify other components that a task was created so they can update if needed
+            this.processTaskCreationQueue();
 
         },
 
+        processTaskCreationQueue(){ // to process any task creations that were triggered while a task creation was already in progress
+            if (this.taskCreationQueue.length > 0){
+                let nextTaskData = this.taskCreationQueue.shift();
+                let taskData = this.getTaskData(nextTaskData);
+                this.createTask(taskData, nextTaskData);
+            }
+        },
         scheduleTaskUpdate(noteData){ // to prevent multiple updates when the user is typing and making multiple changes to the task in a short amount of time
             console.log('Scheduling save');
             clearTimeout(this.$store.savingElement.timeout);
@@ -240,6 +249,9 @@ export default function taskActions(){
             } else if (noteData["operation"] == "create" && !this.creatingTask){ // to prevent multiple creations 
                 let taskData = this.getTaskData(noteData);
                 this.createTask(taskData, noteData);
+            } else if (noteData["operation"] == "create" && this.creatingTask){
+                console.log("Already creating task, adding task creation to queue"); // test
+                this.taskCreationQueue.push(noteData);
             }
         }
     }
