@@ -20,6 +20,21 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                 plugins: 'lists link code',
                 extended_valid_elements: 'span[class|id]', // allow span tags with class and id attributes
                 keep_styles: false,
+                content_style: `
+                        .task {
+                        background-color: rgb(43, 127, 255);
+                        color: white;
+                        padding: 2px 4px;
+                        border-radius: 4px;
+                        font-weight: bold;
+                        }
+                        .task-selected {
+                        background-color: orange;
+                        padding: 2px 4px;
+                        border-radius: 4px;
+                        font-weight: bold;
+                        }
+                    `,
                 toolbar: 'undo redo | fontfamily fontsize | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image table | code',
                 setup: (editor) => {
                     this.editor = editor;

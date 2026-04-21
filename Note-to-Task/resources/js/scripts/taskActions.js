@@ -109,7 +109,6 @@ export default function taskActions(){
             
             let newNoteContent = noteContent.substring(0, taskStartIndex) + `<span class="task" id="taskRef${newId}">` + noteContent.substring(taskStartIndex, taskEndIndex) + `</span> &nbsp;` + noteContent.substring(taskEndIndex)  
 
-        
             noteData["noteEditor"].setContent(newNoteContent);
 
             // restore cursor position
@@ -134,11 +133,12 @@ export default function taskActions(){
             }
         },
         scheduleTaskUpdate(noteData){ // to prevent multiple updates when the user is typing and making multiple changes to the task in a short amount of time
-            console.log('Scheduling save');
-            clearTimeout(this.$store.savingElement.timeout);
-            this.$store.savingElement.timeout = setTimeout(() => {
-                this.updateTaskInDB(noteData);
-            }, 2000);
+            console.log('Scheduling update');
+            // clearTimeout(this.$store.savingElement.timeout);
+            // this.$store.savingElement.timeout = setTimeout(() => {
+            //     this.updateTaskInDB(noteData);
+            // }, 2000);
+            this.updateTaskInDB(noteData);
             this.updateTaskOnFrontend(noteData);
 
         },
@@ -190,11 +190,12 @@ export default function taskActions(){
         },
 
         scheduleTaskDeletion(noteData){ // to prevent multiple updates when the user is typing and making multiple changes to the task in a short amount of time
-            console.log('Scheduling save');
+            console.log('Scheduling deletion');
             clearTimeout(this.$store.savingElement.timeout);
-            this.$store.savingElement.timeout = setTimeout(() => {
-                this.deleteTaskInDB(noteData);
-            }, 2000);
+            // this.$store.savingElement.timeout = setTimeout(() => {
+            //     
+            // }, 100);
+            this.deleteTaskInDB(noteData);
             this.deleteTaskOnFrontend(noteData);
 
         },
@@ -221,7 +222,7 @@ export default function taskActions(){
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': this.csrfToken
                     },
-                    body: JSON.stringify({ id: noteData["taskId"] })
+                    body: JSON.stringify({ id: noteData["id"] })
                 });
 
                 if (!response.ok) {
@@ -233,6 +234,7 @@ export default function taskActions(){
                 this.$store.savingElement.hide();
 
                 //this.lastSavedContent = content;
+                console.log("Task deleted with id: ", noteData["id"]); // test
                 
             } catch (error) {
                 console.error('Error deleting task:', error);
