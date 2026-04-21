@@ -21,6 +21,14 @@ export default function taskActions(){
             console.log("tasks: ", this.tasks)
         },
 
+        highlightTask(taskId){
+            document.dispatchEvent(new CustomEvent('highlight-task', { detail: { taskId: taskId } })); // to notify note editor to highlight the task reference in the note when hovering over the task card
+        },
+        
+        unhighlightTask(taskId){
+            document.dispatchEvent(new CustomEvent('unhighlight-task', { detail: { taskId: taskId } })); // to notify note editor to unhighlight the task reference in the note when not hovering over the task card anymore
+        },
+
         
         getTaskData(noteData){ // gets data for task
             

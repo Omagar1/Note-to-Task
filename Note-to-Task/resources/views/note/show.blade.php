@@ -39,7 +39,7 @@
                 <div  id="taskContainer" x-data="taskActions()" x-init=' init({{ $note->id }}, {create: "{{ route("task.create") }}" , update: "{{ route("task.update") }}" , delete: "{{ route("task.delete") }}" }, @json($tasks)) ' @task-detected.window ="detectTask($event.detail)" class="grid grid-cols-1 gap-4"  >
 
                     <template x-for="task in tasks" :key="task.id">
-                        <div class="flex flex-col gap-4 p-6 bg-blue-500 rounded shadow-md text-white">
+                        <div @mouseenter="highlightTask(task.id)" @mouseleave="unhighlightTask(task.id)"  class="flex flex-col gap-4 p-6 bg-blue-500 rounded shadow-md text-white hover:bg-orange-500 transition-colors duration-300">
                             <h3 x-text="task.title" class = "text-balance text-xl lg:text-2xl font-bold text-on-surface-strong dark:text-on-surface-dark-strong bg-on-surface-strong dark:bg-on-surface-dark-strong "></h3>
                             <label for="checkboxSuccess" class="flex items-center gap-2 text-sm font-medium text-on-surface dark:text-on-surface-dark has-checked:text-on-surface-strong dark:has-checked:text-on-surface-dark-strong has-disabled:opacity-75 has-disabled:cursor-not-allowed">
                                 <span class="relative flex items-center">
@@ -64,4 +64,4 @@
 @section('footer')
 
 @endsection
-    
+

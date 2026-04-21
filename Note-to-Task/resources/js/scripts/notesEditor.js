@@ -20,6 +20,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                 plugins: 'lists link code',
                 extended_valid_elements: 'span[class|id]', // allow span tags with class and id attributes
                 keep_styles: false,
+                //content_css: "/resources/css/app.css",
                 content_style: `
                         .task {
                         background-color: rgb(43, 127, 255);
@@ -29,7 +30,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                         font-weight: bold;
                         }
                         .task-selected {
-                        background-color: orange;
+                        background-color: rgb(255, 105, 0);
                         padding: 2px 4px;
                         border-radius: 4px;
                         font-weight: bold;
@@ -42,6 +43,17 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                         if (initialContent) editor.setContent(this.initialContent) ;
                         this.currentContent = editor.getContent();
                         this.lastSavedContent = editor.getContent();
+
+                        // event listener
+                        document.addEventListener('highlight-task', (event) => {
+                            const { taskId } = event.detail;
+                            // Implementation for highlighting task
+                            const taskElement = this.editor.dom.get(`taskRef${taskId}`);
+                            this.editor.dom.addClass(taskElement, 'task-selected');
+                            document.addEventListener('unhighlight-task', (event) => {
+                                this.editor.dom.removeClass(taskElement, 'task-selected');
+                            }, { once: true });
+                        });
                     });
                     this.editor.on('change keyup undo redo', () => {
                         console.log('Text changed');
