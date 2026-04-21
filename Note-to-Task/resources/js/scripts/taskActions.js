@@ -105,7 +105,11 @@ export default function taskActions(){
             //const cursorPos = noteData["noteEditor"].selection.getBookmark(); // to save the cursor position so we can put it back after changing the content and losing the cursor position
             let taskStartIndex = indexesOfKeyword[indexesOfKeyword.length - 1] // to get the start place to put a new tag
             let taskEndIndex = noteContent.indexOf('<', taskStartIndex); // to get the start place to put a new tag
-            let newNoteContent = noteContent.substring(0, taskStartIndex) + `<span class="task" id="taskRef${newId}">` + noteContent.substring(taskStartIndex, taskEndIndex) + `</span> &nbsp;` + noteContent.substring(taskEndIndex) ;
+
+            
+            let newNoteContent = noteContent.substring(0, taskStartIndex) + `<span class="task" id="taskRef${newId}">` + noteContent.substring(taskStartIndex, taskEndIndex) + `</span> &nbsp;` + noteContent.substring(taskEndIndex)  
+
+        
             noteData["noteEditor"].setContent(newNoteContent);
 
             // restore cursor position
@@ -124,6 +128,7 @@ export default function taskActions(){
         processTaskCreationQueue(){ // to process any task creations that were triggered while a task creation was already in progress
             if (this.taskCreationQueue.length > 0){
                 let nextTaskData = this.taskCreationQueue.shift();
+                // creating the task as normal
                 let taskData = this.getTaskData(nextTaskData);
                 this.createTask(taskData, nextTaskData);
             }
