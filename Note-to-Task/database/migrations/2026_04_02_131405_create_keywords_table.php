@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('keywords', function (Blueprint $table) {
             $table->id();
             $table->string('trigger_word');
-            $table->string('action_id');
-            $table->string('user_id');
+            $table->foreignId('action_id')->constrained('actions')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

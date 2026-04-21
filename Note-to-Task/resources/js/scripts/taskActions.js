@@ -24,7 +24,7 @@ export default function taskActions(){
         
         getTaskData(noteData){ // gets data for task
             
-            let taskId = noteData["id"] ? noteData["id"] : null; 
+            let taskId = noteData["id"] ? parseInt(noteData["id"]) : null; 
 
             let indexOfKeyword = noteData["newContentText"].indexOf(this.keyword);
 
@@ -222,7 +222,7 @@ export default function taskActions(){
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': this.csrfToken
                     },
-                    body: JSON.stringify({ id: noteData["id"] })
+                    body: JSON.stringify({ id: parseInt(noteData["id"]) })
                 });
 
                 if (!response.ok) {
