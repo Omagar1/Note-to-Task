@@ -22,27 +22,27 @@ export default function taskActions(){
 
         
         getTaskData(noteData){ // gets data for task
-            let noteContent = noteData["noteEditor"].getContent();
-            let taskId = noteData["id"] ? noteData["id"] : null; // to get the id of the task if it already exists for updating, otherwise it will be null for creating a new task
+            
+            let taskId = noteData["id"] ? noteData["id"] : null; 
 
-            let indexesOfKeyword = helperScripts.getIndicesOf(this.keyword, noteContent, false);
+            let indexOfKeyword = noteData["newContentText"].indexOf(this.keyword);
 
             //console.log("Indexes: ", indexesOfKeyword);// test
             //console.log("Current content: ", noteContent);// test
 
             // getting title
-            console.log("indexesOfKeyword: ", indexesOfKeyword);
-            let taskTitleStartIndex = indexesOfKeyword[indexesOfKeyword.length - 1] + this.keyword.length; 
-            let taskTitleEndIndex = noteContent.indexOf('<', taskTitleStartIndex);
-            let taskTitle = noteContent.substring(taskTitleStartIndex, taskTitleEndIndex).trim();
+            console.log("indexOfKeyword: ", indexOfKeyword);
+            let taskTitleStartIndex = indexOfKeyword + this.keyword.length; 
+            let taskTitleEndIndex = noteData["newContentText"].indexOf('<', taskTitleStartIndex);
+            let taskTitle = noteData["newContentText"].substring(taskTitleStartIndex, taskTitleEndIndex).trim();
             
             if(taskTitle === "" || taskTitle === "&nbsp;"){ // if there is no title after the keyword, give it a default title
                 taskTitle = "New Task";
             }
 
-            taskTitle = taskTitle.replace(/&nbsp;/g, ' '); // replace &nbsp; with regular spaces
-            taskTitle = taskTitle.replace(/<br>/g, ' '); // replace <br> with regular spaces
-            taskTitle = taskTitle.trim(); // replace <div> with regular spaces
+            taskTitle = taskTitle.replace(/&nbsp;/g, ' '); 
+            taskTitle = taskTitle.replace(/<br>/g, ' '); 
+            taskTitle = taskTitle.trim(); 
             console.log("Task title:", taskTitle);// test 
             
             // seeing if task is a sub task by looking for a parent task tag before it and seeing if it has an id
@@ -104,7 +104,7 @@ export default function taskActions(){
             //const cursorPos = noteData["noteEditor"].selection.getBookmark(); // to save the cursor position so we can put it back after changing the content and losing the cursor position
             let taskStartIndex = indexesOfKeyword[indexesOfKeyword.length - 1] // to get the start place to put a new tag
             let taskEndIndex = noteContent.indexOf('<', taskStartIndex); // to get the start place to put a new tag
-            let newNoteContent = noteContent.substring(0, taskStartIndex) + `<span class="task" id="taskRef${newId}">` + noteContent.substring(taskStartIndex, taskEndIndex) + `</span>` + noteContent.substring(taskEndIndex);
+            let newNoteContent = noteContent.substring(0, taskStartIndex) + `<span class="task" id="taskRef${newId}">` + noteContent.substring(taskStartIndex, taskEndIndex) + `</span> &nbsp;` + noteContent.substring(taskEndIndex) ;
             noteData["noteEditor"].setContent(newNoteContent);
 
             // restore cursor position
@@ -114,6 +114,8 @@ export default function taskActions(){
 
             console.log("Task created with id: ", newId); // test
             this.creatingTask = false;
+
+            document.dispatchEvent(new CustomEvent('task-created', { detail: { taskId: newId, noteId: this.noteID } })); // to notify other components that a task was created so they can update if needed
 
         },
 

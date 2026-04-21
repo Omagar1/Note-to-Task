@@ -47,39 +47,71 @@ export const helperScripts = {
     
     getDelta(newContent, oldContent){
 
-        let deltaLength = newContent.length - oldContent.length;
+        let newContentArray = newContent.split('\n');
+        let oldContentArray = oldContent.split('\n');
+        let result = {linesChanged: 0, lines: [] };
+        let linesConcurrentLength = 0 
+        
+        for (let i = 0; i < Math.min(newContentArray.length, oldContentArray.length); i++) {
+            if (newContentArray[i] !== oldContentArray[i]){ 
+                result.linesChanged++;
+                let deltaLength = newContentArray[i].length - oldContentArray[i].length;
 
-        if (deltaLength < 0){ // if text was deleted, we want to compare the old content to the new content to get the delta
-            let temp = newContent;
-            newContent = oldContent;
-            oldContent = temp;
+                if (deltaLength < 0){ // if text was deleted, we want to compare the old content to the new content to get the delta
+                    let temp = newContentArray[i];
+                    newContentArray[i] = oldContentArray[i];
+                    oldContentArray[i] = temp;
+                }
+                let startIndex = 0; 
+                let endIndex = newContentArray[i].length - 1;
+
+                // console.log("Delta length: ", deltaLength); // test
+                // console.log("startIndex: ", startIndex); // test
+                // console.log("endIndex: ", endIndex); // test
+
+                // console.log("New content: ", newContent); // test
+                // console.log("Old content: ", oldContent); // test
+                
+
+                while (newContentArray[i][startIndex] === oldContentArray[i][startIndex] && startIndex < oldContentArray[i].length){
+                    startIndex++;
+                }
+                
+                
+                while (newContentArray[i][endIndex] === oldContentArray[i][endIndex] && endIndex > startIndex){
+                    endIndex--;
+                }
+                
+                endIndex++; // to get the index after the last changed character
+                let deltaText = newContentArray[i].substring(startIndex, endIndex);
+
+                // adjusting start and end index to be the indices of the delta text in the new content for easier keyword checking later
+                //console.log("Lines concurrent length: ", linesConcurrentLength); // test
+                startIndex += linesConcurrentLength;
+                endIndex += linesConcurrentLength;
+
+                //console.log("Delta: ", deltaText); // test
+                endIndex = Math.max(endIndex, 0); // to prevent issues when deleting at the end of the content
+                result.lines.push({lineIndex: i, deltaText: deltaText, startIndex: startIndex, endIndex: endIndex, deltaLength: deltaLength});
+            }
+            linesConcurrentLength += Math.max(newContentArray[i].length, oldContentArray[i].length) + 1; // +1 for the newline character that was removed in the split
         }
-        let startIndex = 0;
-        let endIndex = newContent.length - 1;
-
-        // console.log("Delta length: ", deltaLength); // test
-        // console.log("startIndex: ", startIndex); // test
-        // console.log("endIndex: ", endIndex); // test
-
-        // console.log("New content: ", newContent); // test
-        // console.log("Old content: ", oldContent); // test
-        
-
-        while (newContent[startIndex] === oldContent[startIndex] && startIndex < oldContent.length){
-            startIndex++;
+        if (newContentArray.length > oldContentArray.length){ // if lines were added, we want to include that in the delta
+            for (let i = oldContentArray.length; i < newContentArray.length; i++) {
+                result.linesChanged++;
+                result.lines.push({lineIndex: i, deltaText: newContentArray[i], startIndex: linesConcurrentLength, endIndex: newContentArray[i].length + linesConcurrentLength, deltaLength: newContentArray[i].length});
+                linesConcurrentLength += newContentArray[i].length + 1; // +1 for the newline character that was removed in the split
+            }
+        } else if (newContentArray.length < oldContentArray.length){ // if lines were deleted, we want to include that in the delta
+            for (let i = newContentArray.length; i < oldContentArray.length; i++) {
+                result.linesChanged++;
+                result.lines.push({lineIndex: i, deltaText: oldContentArray[i], startIndex: linesConcurrentLength, endIndex: oldContentArray[i].length + linesConcurrentLength, deltaLength: -oldContentArray[i].length});
+                linesConcurrentLength += oldContentArray[i].length + 1; // +1 for the newline character that was removed in the split
+            }
         }
-        
-        
-        while (newContent[endIndex] === oldContent[endIndex] && endIndex > startIndex){
-            endIndex--;
-        }
-        
-        endIndex++; // to get the index after the last changed character
-        let deltaText = newContent.substring(startIndex, endIndex);
-    
-        //console.log("Delta: ", deltaText); // test
-        endIndex = Math.max(endIndex, 0); // to prevent issues when deleting at the end of the content
-        return {text: deltaText, startIndex: startIndex, endIndex: endIndex, deltaLength: deltaLength};
+
+        return result;
+
     },
 
     getIndicesOf(searchStr, str, caseSensitive) { // from https://stackoverflow.com/questions/3410464/how-to-find-indices-of-all-occurrences-of-one-string-in-another-in-javascript
