@@ -59,6 +59,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                         console.log('Text changed');
                         clearTimeout(this.userTypeTimeout);
                         this.userTypeTimeout = setTimeout(() => { // wait for user to stop typing for 1 second before checking for keywords and saving
+                            this.cleanUp(); // has to be before getting content to prevent empty span tags causing issues with keyword detection and tags
                             let newContent = this.editor.getContent();
                             let delta = helperScripts.getDelta(newContent, this.currentContent);
                             console.log("Delta: ", delta);
@@ -229,11 +230,13 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
             this.$store.savingElement.hide();
         },
 
-        cleanUp() { // not currently used
-            let tagsToRemove = '<span class="task"></span>'; // an empty task tag with no task ID
-
-            this.currentContent = this.currentContent.replace(tagsToRemove, '');
-            this.editor.setContent(this.currentContent);
+        cleanUp() { // removes empty span tags that can cause issues with keyword detection and tags
+            const allSpans = this.editor.dom.select('span.task');
+            allSpans.forEach(span => {
+                if (!span.textContent || span.textContent.trim() === '') {
+                    this.editor.dom.remove(span, true);
+                }
+            });
         }
         
     }
