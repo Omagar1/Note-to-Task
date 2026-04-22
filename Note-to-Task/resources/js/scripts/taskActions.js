@@ -97,17 +97,15 @@ export default function taskActions(){
             console.log("Task title:", taskTitle);// test 
             
             // seeing if task is a sub task by looking for a parent task tag before it and seeing if it has an id
-
-            // find position of keyword in noteData["noteEditor"] content and 
-            const noteContent = noteData["noteEditor"].getContent();
-            let indexInNoteContent = noteContent.lastIndexOf(noteData["newContentText"]); 
-            //then look for the closest previous <span class="task" id="taskRef{id}">
-            let prevSpanTag = helperScripts.getPrevTag(noteContent, helperScripts.getPrevTagIndex(noteContent ,indexInNoteContent));
+            const parentSpanTag = noteData["noteEditor"].dom.getParent(noteData["noteEditor"].selection.getNode(), 'span')
+            
+            console.log("parentSpanTag: ", parentSpanTag);
+            console.log("parentSpanTag.id: ", parentSpanTag.id)
             
             let keywordRefRegex = new RegExp(noteData["keyword"].replace(/[:)#-_]/g, "") + "Ref(\\d+)"); // escape special characters in keyword for regex
             // get the id of the parent task if there is a match
-            let match = prevSpanTag.match(keywordRefRegex);
-            console.log("prevSpanTag: ", prevSpanTag); // test
+            let match = parentSpanTag.id.match(keywordRefRegex);
+            
             console.log("match: ", match); // test
 
             let parentTaskId = match ? parseInt(match[1]) : null; // if there is a match, get the id, otherwise set to null
@@ -189,7 +187,14 @@ export default function taskActions(){
             if (taskData.sub_task_of_task_id){ // sub task
                 // for task list
                 let parentTaskIndex = this.tasks.findIndex(task => task.id == taskData.sub_task_of_task_id);
-                this.tasks[parentTaskIndex].subTasks.push(taskData);
+                console.log("parentTaskIndex: ", parentTaskIndex);
+                console.log("parentTask: ", this.tasks[parentTaskIndex]);
+                if(this.tasks[parentTaskIndex].sub_tasks){
+                    this.tasks[parentTaskIndex].sub_tasks.push(taskData);
+                } else{
+                    this.tasks[parentTaskIndex].sub_tasks = [taskData];
+                }
+                
 
                 // for note editor
                 newNoteContent = noteContent.substring(0, taskStartIndex) + `<span class="sub-task" id="taskRef${newId}">` + noteContent.substring(taskStartIndex, taskEndIndex) + `</span> &nbsp;` + noteContent.substring(taskEndIndex)  
