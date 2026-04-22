@@ -11,7 +11,7 @@ export default function taskActions(){
         keyword: "task:",
         creatingTask: false, // to prevent multiple creations of the same task when the keyword is detected multiple times in a row as the user types
 
-        init(noteID, routes, tasks){
+        async init(noteID, routes, tasks){
             this.noteID = noteID;
             this.routes = routes;
             //this.tasks = [{title: "test", id: "test"}]
@@ -19,6 +19,48 @@ export default function taskActions(){
             this.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
             console.log("tasks: ", this.tasks)
+
+            // get sub tasks
+            for(let taskIndex in this.tasks){
+                console.log("task: ", tasks[taskIndex]); // test
+                console.log("getting sub tasks of task: ", tasks[taskIndex].id ); // test
+                
+                // try {
+                //     //console.log("Sending task data to server: ", task.id); // test
+                //     const response = await fetch(this.routes.get_sub_tasks, {
+                //         method: 'POST',
+                //         headers: {
+                //             'Content-Type': 'application/json',
+                //             'Accept': 'application/json',
+                //             'X-CSRF-TOKEN': this.csrfToken
+                //         },
+                //         body: JSON.stringify({taskId: tasks[taskIndex].id})
+                //     });
+
+                //     const data = await response.json();
+
+                //     if (!response.ok) {
+                //         console.log("Validation errors:", data);
+                //         throw new Error("Validation failed");
+                //     }
+
+                //     //console.log("Status:", response.status);
+                //     console.log("return data: ", data ),
+                    
+                //     //console.log("Response from server: ", data); // test
+                //     tasks[taskIndex]["subTasks"] = (data) ? data : []
+                    
+                //     this.$store.savingElement.hide();
+                // } catch (error) {
+                //     console.error('Error getting sub tasks:', error);
+                //     this.$store.savingElement.hide();
+                //     // show error notification here once made
+                // }
+
+                // console.log("subTasks: ", tasks[taskIndex].subTasks);
+
+            }
+            
         },
 
         highlightTask(taskId){
@@ -55,14 +97,35 @@ export default function taskActions(){
             console.log("Task title:", taskTitle);// test 
             
             // seeing if task is a sub task by looking for a parent task tag before it and seeing if it has an id
-                // jk not yet 
+
+            // find position of keyword in noteData["noteEditor"] content and 
+            const noteContent = noteData["noteEditor"].getContent();
+            let indexInNoteContent = noteContent.lastIndexOf(noteData["newContentText"]); 
+            //then look for the closest previous <span class="task" id="taskRef{id}">
+            let prevSpanTag = helperScripts.getPrevTag(noteContent, helperScripts.getPrevTagIndex(noteContent ,indexInNoteContent));
+            
+            let keywordRefRegex = new RegExp(noteData["keyword"].replace(/[:)#-_]/g, "") + "Ref(\\d+)"); // escape special characters in keyword for regex
+            // get the id of the parent task if there is a match
+            let match = prevSpanTag.match(keywordRefRegex);
+            console.log("prevSpanTag: ", prevSpanTag); // test
+            console.log("match: ", match); // test
+
+            let parentTaskId = match ? parseInt(match[1]) : null; // if there is a match, get the id, otherwise set to null
 
             // not getting extraInfo or deadline as these are done by their own Actions class
 
-            return {id: taskId, title: taskTitle, made_from_note_id: this.noteID}
+            return {id: taskId, title: taskTitle, sub_task_of_task_id: parentTaskId, made_from_note_id: this.noteID}
         },
 
-        async createTask(taskData, noteData){ // makes task in db and then on front end
+        async scheduleTaskCreation(taskData, noteData){ 
+            let newID = await this.createTaskInDB(taskData, noteData);
+            if (newID){
+                this.createTaskOnFrontend(taskData, noteData, newID);
+            }
+
+        },
+
+        async createTaskInDB(taskData, noteData){ // makes task in db and returns the new id 
             console.log("Creating task with data: ", taskData); // test
             this.creatingTask = true;
             this.$store.savingElement.show();
@@ -92,30 +155,51 @@ export default function taskActions(){
                 }
 
                 //console.log("Status:", response.status);
-                
+                console.log("return data: ", data ),
                 
                 //console.log("Response from server: ", data); // test
                 newId = data.id;
                 //console.log("New task created with id: ", newId); // test 
                 //console.log(data.message);
                 this.$store.savingElement.hide();
+                return newId;
             } catch (error) {
                 console.error('Error saving task:', error);
                 this.$store.savingElement.hide();
+
                 // show error notification here once made
+                return null;
             }
-            
-            // show on front end
+        },
+
+        createTaskOnFrontend(taskData, noteData, newId){ // to create task on frontend after getting id from db
             taskData["id"] = newId;
             console.log("this.tasks: ", this.tasks)
-            this.tasks.push(taskData);
+
+            let noteContent = noteData["noteEditor"].getContent();
+            let indexesOfKeyword = helperScripts.getIndicesOf(this.keyword, noteContent, false);
+
             // set id in note editor
             //const cursorPos = noteData["noteEditor"].selection.getBookmark(); // to save the cursor position so we can put it back after changing the content and losing the cursor position
             let taskStartIndex = indexesOfKeyword[indexesOfKeyword.length - 1] // to get the start place to put a new tag
             let taskEndIndex = noteContent.indexOf('<', taskStartIndex); // to get the start place to put a new tag
 
+            let newNoteContent = "";
+
+            if (taskData.sub_task_of_task_id){ // sub task
+                // for task list
+                let parentTaskIndex = this.tasks.findIndex(task => task.id == taskData.sub_task_of_task_id);
+                this.tasks[parentTaskIndex].subTasks.push(taskData);
+
+                // for note editor
+                newNoteContent = noteContent.substring(0, taskStartIndex) + `<span class="sub-task" id="taskRef${newId}">` + noteContent.substring(taskStartIndex, taskEndIndex) + `</span> &nbsp;` + noteContent.substring(taskEndIndex)  
+            }else{ // main task
+                // for task list 
+                this.tasks.push(taskData);
+                // for note editor 
+                newNoteContent = noteContent.substring(0, taskStartIndex) + `<span class="task" id="taskRef${newId}">` + noteContent.substring(taskStartIndex, taskEndIndex) + `</span> &nbsp;` + noteContent.substring(taskEndIndex)   
+            }
             
-            let newNoteContent = noteContent.substring(0, taskStartIndex) + `<span class="task" id="taskRef${newId}">` + noteContent.substring(taskStartIndex, taskEndIndex) + `</span> &nbsp;` + noteContent.substring(taskEndIndex)  
 
             noteData["noteEditor"].setContent(newNoteContent);
 
@@ -129,15 +213,15 @@ export default function taskActions(){
 
             document.dispatchEvent(new CustomEvent('task-created', { detail: { taskId: newId, noteId: this.noteID } })); // to notify other components that a task was created so they can update if needed
             this.processTaskCreationQueue();
-
         },
+
 
         processTaskCreationQueue(){ // to process any task creations that were triggered while a task creation was already in progress
             if (this.taskCreationQueue.length > 0){
                 let nextTaskData = this.taskCreationQueue.shift();
                 // creating the task as normal
                 let taskData = this.getTaskData(nextTaskData);
-                this.createTask(taskData, nextTaskData);
+                this.scheduleTaskCreation(taskData, nextTaskData);
             }
         },
         scheduleTaskUpdate(noteData){ // to prevent multiple updates when the user is typing and making multiple changes to the task in a short amount of time
@@ -263,7 +347,7 @@ export default function taskActions(){
                 this.scheduleTaskUpdate(noteData);
             } else if (noteData["operation"] == "create" && !this.creatingTask){ // to prevent multiple creations 
                 let taskData = this.getTaskData(noteData);
-                this.createTask(taskData, noteData);
+                this.scheduleTaskCreation(taskData, noteData);
             } else if (noteData["operation"] == "create" && this.creatingTask){
                 console.log("Already creating task, adding task creation to queue"); // test
                 this.taskCreationQueue.push(noteData);

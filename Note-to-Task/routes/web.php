@@ -25,6 +25,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/task/create', [TaskController::class, 'store'])->name('task.create');
     Route::post('/task/update', [TaskController::class, 'update'])->name('task.update');
     Route::post('/task/delete', [TaskController::class, 'destroy'])->name('task.delete');
+    Route::post('/task/get_sub_tasks', [TaskController::class, 'get_sub_tasks'])->name('task.get_sub_tasks');
 
     Route::get('settings', function () {
         return view('settings');

@@ -32,36 +32,28 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'made_from_note_id' => 'integer|exists:notes,id',
+            'sub_task_of_task_id' => 'nullable|integer|exists:tasks,id'
         ]);
 
         $task = Task::create([
             'title' => $request->input('title'),
             'description' => $request->input('description'),
             'made_from_note_id' => $request->input('made_from_note_id'),
+            'sub_task_of_task_id' => $request->input('sub_task_of_task_id')
         ]);
 
         if ($task) {
-            return response()->json(['message' => 'Task created successfully', 'id' => $task->id]);
+            return response()->json(['message' => 'Task created successfully', 'id' => $task->id, 'sub_task_of_task_id'=> $request["sub_task_of_task_id"]]);
         } else {
             return response()->json(['message' => 'Failed to create task']);
         }
         
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Task $task)
+    public function get_sub_tasks(Request $request)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Task $task)
-    {
-        //
+        
+        
     }
 
     /**
