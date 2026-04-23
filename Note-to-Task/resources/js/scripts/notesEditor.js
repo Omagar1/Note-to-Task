@@ -237,9 +237,10 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                     this.editor.dom.remove(span, true);
                 }
                 const nbsp = this.editor.getDoc().createTextNode('\u00A0'); // non-breaking space
-                console.log("span.nextSibling: ", span.nextSibling)
-
-                if(!span.nextSibling.test(/&nbsp;/)){
+                console.log("span.nextSibling: ", span.nextSibling);
+                console.log("span.nextSibling type: ", typeof(span.nextSibling.toString()));
+                let nextSiblingString = span.nextSibling.toString()
+                if(!nextSiblingString.match(/&nbsp;/)){
                     this.editor.dom.insertAfter(nbsp, span)
                 }
             });

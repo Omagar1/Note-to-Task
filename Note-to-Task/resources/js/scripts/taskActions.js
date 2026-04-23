@@ -18,48 +18,7 @@ export default function taskActions(){
             this.tasks = tasks ? tasks : [] ;
             this.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-            console.log("tasks: ", this.tasks)
-
-            // get sub tasks
-            for(let taskIndex in this.tasks){
-                console.log("task: ", tasks[taskIndex]); // test
-                console.log("getting sub tasks of task: ", tasks[taskIndex].id ); // test
-                
-                // try {
-                //     //console.log("Sending task data to server: ", task.id); // test
-                //     const response = await fetch(this.routes.get_sub_tasks, {
-                //         method: 'POST',
-                //         headers: {
-                //             'Content-Type': 'application/json',
-                //             'Accept': 'application/json',
-                //             'X-CSRF-TOKEN': this.csrfToken
-                //         },
-                //         body: JSON.stringify({taskId: tasks[taskIndex].id})
-                //     });
-
-                //     const data = await response.json();
-
-                //     if (!response.ok) {
-                //         console.log("Validation errors:", data);
-                //         throw new Error("Validation failed");
-                //     }
-
-                //     //console.log("Status:", response.status);
-                //     console.log("return data: ", data ),
-                    
-                //     //console.log("Response from server: ", data); // test
-                //     tasks[taskIndex]["subTasks"] = (data) ? data : []
-                    
-                //     this.$store.savingElement.hide();
-                // } catch (error) {
-                //     console.error('Error getting sub tasks:', error);
-                //     this.$store.savingElement.hide();
-                //     // show error notification here once made
-                // }
-
-                // console.log("subTasks: ", tasks[taskIndex].subTasks);
-
-            }
+            console.log("tasks: ", this.tasks);
             
         },
 
@@ -99,17 +58,19 @@ export default function taskActions(){
             // seeing if task is a sub task by looking for a parent task tag before it and seeing if it has an id
             const parentSpanTag = noteData["noteEditor"].dom.getParent(noteData["noteEditor"].selection.getNode(), 'span')
             
-            console.log("parentSpanTag: ", parentSpanTag);
-            console.log("parentSpanTag.id: ", parentSpanTag.id)
-            
-            let keywordRefRegex = new RegExp(noteData["keyword"].replace(/[:)#-_]/g, "") + "Ref(\\d+)"); // escape special characters in keyword for regex
+            //console.log("parentSpanTag: ", parentSpanTag); // test
+            //console.log("parentSpanTag.id: ", parentSpanTag.id); // test
+
+            let parentTaskId = null
+            if(parentSpanTag){
+                let keywordRefRegex = new RegExp(noteData["keyword"].replace(/[:)#-_]/g, "") + "Ref(\\d+)"); // escape special characters in keyword for regex
             // get the id of the parent task if there is a match
             let match = parentSpanTag.id.match(keywordRefRegex);
             
             console.log("match: ", match); // test
 
             let parentTaskId = match ? parseInt(match[1]) : null; // if there is a match, get the id, otherwise set to null
-
+            }
             // not getting extraInfo or deadline as these are done by their own Actions class
 
             return {id: taskId, title: taskTitle, sub_task_of_task_id: parentTaskId, made_from_note_id: this.noteID}
@@ -342,6 +303,64 @@ export default function taskActions(){
             this.$store.savingElement.hide();
         },
 
+        scheduleTaskComplete(taskId, parentTaskID=null){
+            // setting timeout so DB is not pinged repeatedly 
+            setTimeout(()=>{ 
+                this.toggleTaskComplete(taskId, parentTaskID)
+            }, 2000); 
+        },
+
+        async toggleTaskComplete(taskId, parentTaskID){
+            
+                console.log("toggleTaskComplete for task: ", taskId);
+
+                this.$store.savingElement.show();
+                try {
+                //console.log(this.route)
+                const response = await fetch(this.routes.toggleComplete, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': this.csrfToken
+                    },
+                    body: JSON.stringify({ id: taskId })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                
+                this.$store.savingElement.hide();
+
+                //this.lastSavedContent = content;
+                console.log("Task completed toggled for task: ", taskId); // test
+
+                // updating front end
+                if(parentTaskID){
+                    //console.log("parentTaskID: ", parentTaskID); // test 
+                    let parentTaskIndex = this.tasks.findIndex(task => task.id == parentTaskID);
+                    // console.log("parentTaskIndex: ", parentTaskIndex); // test
+                    // console.log("parentTask: ", this.tasks[parentTaskIndex]); // test 
+                    // console.log("parentTask.sub_tasks: ", this.tasks[parentTaskIndex].sub_tasks); // test 
+                    let taskIndex = this.tasks[parentTaskIndex].sub_tasks.findIndex(task =>task.id ==taskId);
+                    //console.log("before: ", this.tasks[parentTaskIndex].sub_tasks[taskIndex].completed_at); // test 
+                    this.tasks[parentTaskIndex].sub_tasks[taskIndex].completed_at = (this.tasks[parentTaskIndex].sub_tasks[taskIndex].completed_at)? null : Date.now();
+                    //console.log("after: ", this.tasks[parentTaskIndex].sub_tasks[taskIndex].completed_at); // test   
+
+                }else{
+                    let taskIndex = this.tasks.findIndex(task => task.id == taskId);
+                    this.tasks[taskIndex].completed_at = (this.tasks[taskIndex].completed_at )? null :  Date.now()
+                }
+                
+                
+            } catch (error) {
+                console.error('Error changing completed_at :', error);
+                this.$store.savingElement.hide();
+                // show error notification here once made
+            }
+        },
         
 
         detectTask(noteData){ // logic for when a task is detected in the note editor

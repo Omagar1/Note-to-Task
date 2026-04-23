@@ -50,9 +50,20 @@ class TaskController extends Controller
         
     }
 
-    public function get_sub_tasks(Request $request)
+    public function set_complete(Request $request)
     {
-        
+        request()->validate([
+            'id' => 'required|integer|exists:tasks,id'
+        ]); 
+
+        $id = $request->input('id');
+        $task = Task::findOrFail($id);
+
+        if( $task->completed_at == null ){
+            $task->update(['completed_at' => date('Y-m-d H:i:s') ]);
+        }else{
+            $task->update(['completed_at' => null ]);
+        }
         
     }
 
