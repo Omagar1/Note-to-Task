@@ -74,18 +74,27 @@ class TaskController extends Controller
     {
         request()->validate([
             'id' => 'required|integer|exists:tasks,id',
-            'title' => 'required|string|max:255',
+            'title' => 'string|max:255',
+            'deadline' => 'date'
         ]);
 
         $id = $request->input('id');
         $task = Task::findOrFail($id);
-        $task->update([
-            'title' => $request->input('title'),
-            'description' => $request->input('description'),
-        ]);
+
+        $updateArr = [];
+        if($request->input('title')){
+            $updateArr["title"] = $request->input('title');
+        }
+
+        if($request->input('deadline')){
+            $updateArr["deadline"] = $request->input('deadline');
+        }
+
+        $task->update($updateArr);
 
         return response()->json(['message' => 'Task updated successfully']);
     }
+
 
     /**
      * Remove the specified resource from storage.

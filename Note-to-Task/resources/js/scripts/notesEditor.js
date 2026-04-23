@@ -11,7 +11,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
         noteId,
         csrfToken,
         route,
-        keywords: ["task:"], // will be loaded in from DB 
+        keywords: ["task:", "deadline:"], // will be loaded in from DB 
 
         
         init() {
@@ -164,8 +164,8 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                     // creating a keyword
                     console.log("creating a new ", keyword);
                     this.$dispatch(dispatchName, {keyword: keyword, operation: "create", noteEditor: this.editor, newContentText: delta.deltaText});
-                    document.addEventListener('task-created', (e) => {
-                        console.log("Task created event received in note editor: ", e.detail); // test
+                    document.addEventListener( keyword.replace(/[:)#-_]/g, "")+'-created', (e) => {
+                        console.log( keyword + "created event received in note editor: ", e.detail); // test
                         this.currentContent = this.editor.getContent(); // updating current content to prevent the new span tags trigging a create, update or delete
                     }, { once: true }); 
                     

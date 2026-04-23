@@ -138,6 +138,11 @@ export const helperScripts = {
         if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`
         if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`
         return `${Math.floor(diff / 86400)} days ago`
+    },
+
+    isStrValidDate(dateStr){
+        const date = new Date(dateStr);
+        return date instanceof Date && !isNaN(date);
     }
 
 }

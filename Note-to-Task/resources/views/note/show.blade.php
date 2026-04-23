@@ -35,7 +35,7 @@
                     <!-- insert search bar code here once made   -->
                     <!-- insert filter code here once made   -->
                 </div>
-                <div  id="taskContainer" x-data="taskActions()" x-init=' init({{ $note->id }}, {create: "{{ route("task.create") }}" , update: "{{ route("task.update") }}" , delete: "{{ route("task.delete") }}", toggleComplete: "{{ route("task.toggleComplete") }}" }, @json($tasks)) ' @task-detected.window ="detectTask($event.detail)" class="grid grid-cols-1 gap-4"  >
+                <div  id="taskContainer" x-data="taskActions()" x-init=' init({{ $note->id }}, {create: "{{ route("task.create") }}" , update: "{{ route("task.update") }}" , delete: "{{ route("task.delete") }}", toggleComplete: "{{ route("task.toggleComplete") }}" }, @json($tasks)) ' @task-detected.window ="detectTask($event.detail)" @deadline-detected.window="detectDeadline($event.detail)" class="grid grid-cols-1 gap-4"  >
 
                     <template x-for="task in tasks" :key="task.id">
                         <div @mouseenter="highlightTask(task.id)" @mouseleave="unhighlightTask(task.id)"  class="flex flex-col gap-4 p-6 bg-blue-500 rounded shadow-md text-white hover:bg-orange-500 transition-colors duration-300">

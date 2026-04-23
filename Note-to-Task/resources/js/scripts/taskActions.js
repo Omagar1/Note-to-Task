@@ -23,6 +23,7 @@ export default function taskActions(){
             
         },
 
+        //  --- task Stuff --- 
         highlightTask(taskId){
             document.dispatchEvent(new CustomEvent('highlight-task', { detail: { taskId: taskId } })); // to notify note editor to highlight the task reference in the note when hovering over the task card
         },
@@ -36,14 +37,14 @@ export default function taskActions(){
             
             let taskId = noteData["id"] ? parseInt(noteData["id"]) : null; 
 
-            let indexOfKeyword = noteData["newContentText"].indexOf(this.keyword);
+            let indexOfKeyword = noteData["newContentText"].indexOf(noteData["keyword"]);
 
             //console.log("Indexes: ", indexesOfKeyword);// test
             //console.log("Current content: ", noteContent);// test
 
             // getting title
             console.log("indexOfKeyword: ", indexOfKeyword);
-            let taskTitleStartIndex = indexOfKeyword + this.keyword.length; 
+            let taskTitleStartIndex = indexOfKeyword + noteData["keyword"].length; 
             let taskTitleEndIndex = noteData["newContentText"].indexOf('<', taskTitleStartIndex);
             let taskTitle = noteData["newContentText"].substring(taskTitleStartIndex, taskTitleEndIndex).trim();
             
@@ -91,7 +92,7 @@ export default function taskActions(){
             this.$store.savingElement.show();
 
             let noteContent = noteData["noteEditor"].getContent();
-            let indexesOfKeyword = helperScripts.getIndicesOf(this.keyword, noteContent, false);
+            let indexesOfKeyword = helperScripts.getIndicesOf(noteData["keyword"], noteContent, false);
             
             // store in db 
             let newId = null; // to hold the new id from the db after creation
@@ -137,7 +138,7 @@ export default function taskActions(){
             console.log("this.tasks: ", this.tasks)
 
             let noteContent = noteData["noteEditor"].getContent();
-            let indexesOfKeyword = helperScripts.getIndicesOf(this.keyword, noteContent, false);
+            let indexesOfKeyword = helperScripts.getIndicesOf(noteData["keyword"], noteContent, false);
 
             // set id in note editor
             //const cursorPos = noteData["noteEditor"].selection.getBookmark(); // to save the cursor position so we can put it back after changing the content and losing the cursor position
@@ -362,8 +363,154 @@ export default function taskActions(){
                 // show error notification here once made
             }
         },
-        
+        //  --- Deadline Stuff ---
+        getDeadlineData(noteData){
 
+            let taskId = noteData["id"] ? parseInt(noteData["id"]) : null; 
+
+            let indexOfKeyword = noteData["newContentText"].indexOf(noteData["keyword"]);
+
+            //console.log("Indexes: ", indexesOfKeyword);// test
+            //console.log("Current content: ", noteContent);// test
+
+            // getting title
+            console.log("indexOfKeyword: ", indexOfKeyword);
+            let deadlineStartIndex = indexOfKeyword + noteData["keyword"].length; 
+            let deadlineEndIndex = noteData["newContentText"].indexOf('<', deadlineStartIndex);
+            let deadlineDate = noteData["newContentText"].substring(deadlineStartIndex, deadlineEndIndex).trim();
+            
+            
+
+            deadlineDate = deadlineDate.replace(/&nbsp;/g, ' '); 
+            deadlineDate = deadlineDate.replace(/<br>/g, ' '); 
+            deadlineDate = deadlineDate.trim(); 
+            console.log("deadline date: ", deadlineDate);// test 
+
+            if(deadlineDate === "" || deadlineDate === "&nbsp;" || helperScripts.isStrValidDate(deadlineDate) ){ // if there is no  date there is no deadline
+                return {error: "no date given"}
+            }
+            
+            if(!taskId){// if taskId is null it means it is a new deadline so need to check for tasks tag
+                const parentSpanTag = noteData["noteEditor"].dom.getParent(noteData["noteEditor"].selection.getNode(), 'span')
+                
+                //console.log("parentSpanTag: ", parentSpanTag); // test
+                //console.log("parentSpanTag.id: ", parentSpanTag.id); // test
+
+                
+                if(parentSpanTag){
+                    let keywordRefRegex = new RegExp("taskRef(\\d+)"); 
+                // get the id of the parent task if there is a match
+                let match = parentSpanTag.id.match(keywordRefRegex);
+                
+                console.log("match: ", match); // test
+
+                taskId = match ? parseInt(match[1]) : null; // if there is a match, get the id, otherwise set to null
+                }
+            }
+            // checking to see if task already has a deadline
+            let taskIndex = this.tasks.findIndex(task => task.id == taskId);
+            
+            if (this.tasks[taskIndex].deadline != null ){
+                return {error: "task already has a deadline!"}
+            }
+            
+
+            return {taskId: taskId, dateTime: deadlineDate}
+
+        },
+
+        scheduleDeadlineCreation(deadlineData, noteData){
+            this.setDeadlineInDB(deadlineData);
+            this.createDeadlineOnFrontend(deadlineData, noteData);
+        },
+
+        async setDeadlineInDB(deadlineData){
+            this.$store.savingElement.show();
+            try {
+                //console.log(this.route)
+                const response = await fetch(this.routes.update, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': this.csrfToken
+                    },
+                    body: JSON.stringify(deadlineData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                
+                this.$store.savingElement.hide();
+
+                //this.lastSavedContent = content;
+                
+            } catch (error) {
+                console.error('Error setting deadline:', error);
+                this.$store.savingElement.hide();
+                // show error notification here once made
+            }
+
+            this.$store.savingElement.hide();
+        },
+
+        createDeadlineOnFrontend(deadlineData, noteData){
+
+            let noteContent = noteData["noteEditor"].getContent();
+            let indexesOfKeyword = helperScripts.getIndicesOf(noteData["keyword"], noteContent, false);
+
+            // set id in note editor
+            //const cursorPos = noteData["noteEditor"].selection.getBookmark(); // to save the cursor position so we can put it back after changing the content and losing the cursor position
+            let deadlineStartIndex = indexesOfKeyword[indexesOfKeyword.length - 1] // to get the start place to put a new tag
+            let deadlineEndIndex = noteContent.indexOf('<', deadlineStartIndex); // to get the start place to put a new tag
+
+            
+
+            
+            // for task card
+
+            let taskIndex = this.tasks.findIndex(task => task.id == taskId);
+            this.tasks[taskIndex].deadline = deadlineData["date"];
+
+            // for note editor 
+            let newNoteContent = noteContent.substring(0, deadlineStartIndex) + `<label class="deadline" for="deadlineRef${deadlineData["taskId"]}"> deadline: </label>  &nbsp; <input type="date" id="deadlineRef${deadlineData["taskId"]}" name="deadlineRef${deadlineData["taskId"]}" value="${deadlineData["date"]}" > &nbsp;` + noteContent.substring(deadlineEndIndex)   
+            noteData["noteEditor"].setContent(newNoteContent);
+
+            // restore cursor position
+            const newDeadline = noteData["noteEditor"].dom.get(`deadlineRef${deadlineData["taskId"]}`); // element inside editor
+            noteData["noteEditor"].selection.select(newDeadline, true);
+            noteData["noteEditor"].selection.collapse(false); // move to end
+
+            console.log("deadline created for task: ", deadlineData["taskId"]); // test
+            //this.creatingDeadline = false;
+
+            document.dispatchEvent(new CustomEvent('deadline-created', { detail: { taskId: deadlineData["taskId"], noteId: this.noteID } })); // to notify other components that a task was created so they can update if needed
+            //this.processDeadlineCreationQueue();
+
+        },
+
+        scheduleDeadlineUpdate(){
+
+        },
+
+
+        updateDeadlineOnFrontend(){
+
+        },
+
+        scheduleDeadlineDeletion(){
+
+        },
+
+
+        deleteDeadlineOnFrontend(){
+
+        },
+
+        
+        // --- detector stuff --- 
         detectTask(noteData){ // logic for when a task is detected in the note editor
             console.log("task Detected with data:", noteData ); // test
             if (noteData["operation"] == "delete"){ 
@@ -377,7 +524,28 @@ export default function taskActions(){
                 console.log("Already creating task, adding task creation to queue"); // test
                 this.taskCreationQueue.push(noteData);
             }
+        },
+
+        detectDeadline(noteData){ // logic for when a task is detected in the note editor
+            console.log("Deadline Detected with data:", noteData ); // test
+            if (noteData["operation"] == "delete"){ 
+                //this.scheduleDeadlineDeletion(noteData);
+            } else if (noteData["operation"] == "update"){
+                //this.scheduleDeadlineUpdate(noteData);
+            } else if (noteData["operation"] == "create" && !this.creatingDeadline){ // to prevent multiple creations 
+                let deadlineData = this.getDeadlineData(noteData);
+                if(deadlineData.error == null && deadlineData.taskId !=null){
+                    this.scheduleDeadlineCreation(deadlineData, noteData);
+                } else{
+                    console.log(deadlineData.error);
+                }
+                
+            } else if (noteData["operation"] == "create" && this.creatingTask){
+                //console.log("Already creating task, adding task creation to queue"); // test
+                //this.deadlineCreationQueue.push(noteData);
+            }
         }
+
     }
 } 
 
