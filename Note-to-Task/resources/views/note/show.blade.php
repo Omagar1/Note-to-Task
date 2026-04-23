@@ -2,7 +2,6 @@
 
 @section('headExtras')
     @include('components.head.tinymce-config')
-
 @endsection
 
 @section('header')
@@ -47,7 +46,7 @@
                                     <li>
                                         <label x-text="subTask.title" class="text-balance" :for="'check-box-for-subtask-'+ subTask.id" ></label>
                                         <input @change="toggleTaskComplete(subTask.id, task.id)" type="checkbox" :id="'check-box-for-subtask-'+ subTask.id " :name="'check-box-for-subtask-'+ subTask.id"  :value="subTask.id" :checked ="(subTask.completed_at != null)" class = "w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft" >
-                                        <span x-show="(subTask.completed_at != null)" x.text="'completed on: '+ helperScripts.diffForHumans(subTask.completed_at)"></span>
+                                        <span x-show="(subTask.completed_at != null)"  x-text= "`completed: ${helperScripts.diffForHumans(subTask.completed_at)}`" class = "bg-green"> test</span>
                                         
                                     </li>
                                     
@@ -57,7 +56,7 @@
                             <div x-show="(!(task.sub_tasks) || task.sub_tasks.length <=0)">
                                 <label class="text-balance" :for="'check-box-for-task-'+ task.id" >complete:</label>
                                 <input @change="toggleTaskComplete(task.id)" type="checkbox" :id="'check-box-for-task-'+ task.id" :name="'check-box-for-task-'+ task.id"  :value="task.id" :checked ="(task.completed_at != null)" class = "w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft">
-                                <span x-show="(task.completed_at != null)" x.text="'completed on: '+ helperScripts.diffForHumans(task.completed_at)"></span>
+                                <span  x-show="(task.completed_at != null)" x-text="'completed: '+ helperScripts.diffForHumans(task.completed_at)" class = "bg-green"> test</span> 
                             </div>           
 
                             

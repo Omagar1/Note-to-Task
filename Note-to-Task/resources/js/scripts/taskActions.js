@@ -10,6 +10,7 @@ export default function taskActions(){
         csrfToken: null,
         keyword: "task:",
         creatingTask: false, // to prevent multiple creations of the same task when the keyword is detected multiple times in a row as the user types
+        helperScripts: helperScripts,
 
         async init(noteID, routes, tasks){
             this.noteID = noteID;
