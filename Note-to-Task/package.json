@@ -18,6 +18,7 @@
     },
     "dependencies": {
         "alpinejs": "^3.15.9",
+        "chrono-node": "^2.9.0",
         "date-fns": "^4.1.0",
         "html-to-json-parser": "^2.0.1",
         "j2h-framework": "^1.0.0",

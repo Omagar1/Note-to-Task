@@ -1,4 +1,5 @@
 import {helperScripts} from './helperScripts';
+import * as chrono from 'chrono-node';
 
 export default function taskActions(){
     return {
@@ -386,9 +387,10 @@ export default function taskActions(){
             deadlineDate = deadlineDate.trim(); 
             console.log("deadline date: ", deadlineDate);// test 
 
-            if(deadlineDate === "" || deadlineDate === "&nbsp;" || helperScripts.isStrValidDate(deadlineDate) ){ // if there is no  date there is no deadline
-                return {error: "no date given"}
-            }
+            let formattedDate = chrono.en.GB.parseDate(deadlineDate);
+            console.log("formattedDate: ", formattedDate);
+
+
             
             if(!taskId){// if taskId is null it means it is a new deadline so need to check for tasks tag
                 const parentSpanTag = noteData["noteEditor"].dom.getParent(noteData["noteEditor"].selection.getNode(), 'span')
@@ -415,7 +417,7 @@ export default function taskActions(){
             }
             
 
-            return {taskId: taskId, dateTime: deadlineDate}
+            return {taskId: taskId, rawDateTime: deadlineDate, formattedDateTime: formattedDate}
 
         },
 
@@ -435,7 +437,7 @@ export default function taskActions(){
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': this.csrfToken
                     },
-                    body: JSON.stringify(deadlineData)
+                    body: JSON.stringify({id: deadlineData.taskId, deadline: deadlineData.formattedDateTime.toISOString()})
                 });
 
                 if (!response.ok) {
@@ -526,7 +528,7 @@ export default function taskActions(){
             }
         },
 
-        detectDeadline(noteData){ // logic for when a task is detected in the note editor
+        async detectDeadline(noteData){ // logic for when a task is detected in the note editor
             console.log("Deadline Detected with data:", noteData ); // test
             if (noteData["operation"] == "delete"){ 
                 //this.scheduleDeadlineDeletion(noteData);
@@ -534,9 +536,25 @@ export default function taskActions(){
                 //this.scheduleDeadlineUpdate(noteData);
             } else if (noteData["operation"] == "create" && !this.creatingDeadline){ // to prevent multiple creations 
                 let deadlineData = this.getDeadlineData(noteData);
-                if(deadlineData.error == null && deadlineData.taskId !=null){
+                if(deadlineData.error == null && deadlineData.taskId !=null && deadlineData.formattedDateTime != null){
                     this.scheduleDeadlineCreation(deadlineData, noteData);
-                } else{
+                } else if (deadlineData.error == null && deadlineData.taskId !=null && deadlineData.formattedDateTime == null){
+                    this.createDeadlineOnFrontend(deadlineData, noteData); // create on front end and then when updated will be added to db as update and create are the same thing for deadlines 
+                
+                }else if (deadlineData.error == null && deadlineData.taskId == null) {
+                    let taskData = {id: null, title: "New Task with ", sub_task_of_task_id: null, made_from_note_id: this.noteID}
+                    
+                    if(!this.creatingTask){
+                        let newID = await this.createTaskInDB(taskData, noteData);
+                        this.createDeadlineOnFrontend(taskData, noteData, newID); 
+
+                        deadlineData.taskID = newID;
+
+                        this.scheduleDeadlineCreation(deadlineData, noteData);
+                    } // ideally would have a  else running this.deadlineCreationQueue.push(noteData); but i cant get newID from that just yet so :(
+                    
+                }
+                else{
                     console.log(deadlineData.error);
                 }
                 

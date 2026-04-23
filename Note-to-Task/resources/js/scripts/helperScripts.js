@@ -143,6 +143,7 @@ export const helperScripts = {
     isStrValidDate(dateStr){
         const date = new Date(dateStr);
         return date instanceof Date && !isNaN(date);
-    }
+    },
+
 
 }
