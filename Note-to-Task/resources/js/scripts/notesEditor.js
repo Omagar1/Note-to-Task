@@ -18,7 +18,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
             tinymce.init({
                 selector: 'textarea#note-content',
                 plugins: 'lists link code',
-                extended_valid_elements: 'span[class|id], label[class|for], input[class|id|type|value|name]', // allow span tags with class and id attributes
+                extended_valid_elements: 'span[class|id]',
                 //keep_styles: false,
                 //content_css: "/resources/css/app.css",
                 content_style: `

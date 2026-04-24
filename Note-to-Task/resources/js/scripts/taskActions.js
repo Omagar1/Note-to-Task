@@ -454,6 +454,7 @@ export default function taskActions(){
                 const data = await response.json();
                 console.log(data.message);
                 console.log(data.error);
+                console.log(data.deadline);
 
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -498,7 +499,7 @@ export default function taskActions(){
             
 
             // for note editor 
-            let newNoteContent = noteContent.substring(0, deadlineStartIndex) + `<label class="deadline" for="deadlineRef${deadlineData["taskId"]}"> deadline: </label>  &nbsp; <input type="datetime-local" id="deadlineRef${deadlineData["taskId"]}" name="deadlineRef${deadlineData["taskId"]}" value="${format(deadlineData["formattedDateTime"],'yyyy-MM-dd HH:mm:ss')}" > &nbsp;` + noteContent.substring(deadlineEndIndex)   
+            let newNoteContent = noteContent.substring(0, deadlineStartIndex) + `<span class="deadline" id="deadlineRef${deadlineData["taskId"]}">` + noteContent.substring(deadlineStartIndex, deadlineEndIndex) + `</span> &nbsp;` +  noteContent.substring(deadlineEndIndex)   
             noteData["noteEditor"].setContent(newNoteContent);
 
             // restore cursor position

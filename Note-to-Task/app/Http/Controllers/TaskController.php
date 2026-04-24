@@ -95,7 +95,7 @@ class TaskController extends Controller
 
             $task->update($updateArr);
 
-            return response()->json(['message' => 'Task updated successfully']);
+            return response()->json(['message' => 'Task updated successfully', "deadline" => $request->input('deadline')]);
         }catch (Throwable $e){
             return response()->json(['message' => "Task update failed ", "error" => $e->getMessage()], 500);
         }
