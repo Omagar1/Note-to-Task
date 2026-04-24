@@ -1,5 +1,6 @@
 import {helperScripts} from './helperScripts';
 import * as chrono from 'chrono-node';
+import { format } from 'date-fns';
 
 export default function taskActions(){
     return {
@@ -411,11 +412,13 @@ export default function taskActions(){
             }
             // checking to see if task already has a deadline
             let taskIndex = this.tasks.findIndex(task => task.id == taskId);
-            
-            if (this.tasks[taskIndex].deadline != null ){
-                return {error: "task already has a deadline!"}
-            }
-            
+            if(taskIndex != -1){ 
+                console.log("taskIndex: ", taskIndex); // test
+                console.log("this.tasks[taskIndex]: ", this.tasks[taskIndex]); // test
+                if (this.tasks[taskIndex].deadline != null ){
+                    return {error: "task already has a deadline!"}
+                }
+            }    
 
             return {taskId: taskId, rawDateTime: deadlineDate, formattedDateTime: formattedDate}
 
@@ -437,17 +440,23 @@ export default function taskActions(){
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': this.csrfToken
                     },
-                    body: JSON.stringify({id: deadlineData.taskId, deadline: deadlineData.formattedDateTime.toISOString()})
+                    body: JSON.stringify({id: deadlineData.taskId, deadline: format(deadlineData.formattedDateTime, 'yyyy-MM-dd HH:mm:ss')}) // get the date in the format for DB
                 });
+
+                console.log(response); // test 
+                const data = await response.json();
+                console.log(data.message);
+                console.log(data.error);
 
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-
                 
+                
+
                 this.$store.savingElement.hide();
 
-                //this.lastSavedContent = content;
+                
                 
             } catch (error) {
                 console.error('Error setting deadline:', error);
@@ -459,6 +468,7 @@ export default function taskActions(){
         },
 
         createDeadlineOnFrontend(deadlineData, noteData){
+            console.log("received deadline data: ", deadlineData); /// test
 
             let noteContent = noteData["noteEditor"].getContent();
             let indexesOfKeyword = helperScripts.getIndicesOf(noteData["keyword"], noteContent, false);
@@ -473,11 +483,15 @@ export default function taskActions(){
             
             // for task card
 
-            let taskIndex = this.tasks.findIndex(task => task.id == taskId);
+            let taskIndex = this.tasks.findIndex(task => task.id == deadlineData["taskId"]);
+            console.log("deadlineData[taskId]: ", deadlineData["taskId"]); // test
+            console.log("taskIndex: ", taskIndex); // test
+            console.log("this.tasks[taskIndex]: ", this.tasks[taskIndex]); // test
             this.tasks[taskIndex].deadline = deadlineData["date"];
+            
 
             // for note editor 
-            let newNoteContent = noteContent.substring(0, deadlineStartIndex) + `<label class="deadline" for="deadlineRef${deadlineData["taskId"]}"> deadline: </label>  &nbsp; <input type="date" id="deadlineRef${deadlineData["taskId"]}" name="deadlineRef${deadlineData["taskId"]}" value="${deadlineData["date"]}" > &nbsp;` + noteContent.substring(deadlineEndIndex)   
+            let newNoteContent = noteContent.substring(0, deadlineStartIndex) + `<label class="deadline" for="deadlineRef${deadlineData["taskId"]}"> deadline: </label>  &nbsp; <input type="datetime-local" id="deadlineRef${deadlineData["taskId"]}" name="deadlineRef${deadlineData["taskId"]}" value="${format(deadlineData["formattedDateTime"],'yyyy-MM-dd HH:mm:ss')}" > &nbsp;` + noteContent.substring(deadlineEndIndex)   
             noteData["noteEditor"].setContent(newNoteContent);
 
             // restore cursor position
@@ -541,18 +555,36 @@ export default function taskActions(){
                 } else if (deadlineData.error == null && deadlineData.taskId !=null && deadlineData.formattedDateTime == null){
                     this.createDeadlineOnFrontend(deadlineData, noteData); // create on front end and then when updated will be added to db as update and create are the same thing for deadlines 
                 
-                }else if (deadlineData.error == null && deadlineData.taskId == null) {
-                    let taskData = {id: null, title: "New Task with ", sub_task_of_task_id: null, made_from_note_id: this.noteID}
+                }else if (deadlineData.error == null && deadlineData.taskId == null && deadlineData.formattedDateTime != null) {
+                    let taskData = {id: null, title: "New Task with Deadline ", sub_task_of_task_id: null, made_from_note_id: this.noteID}
                     
                     if(!this.creatingTask){
+                        console.log("deadline has no task so creating one for it");
                         let newID = await this.createTaskInDB(taskData, noteData);
-                        this.createDeadlineOnFrontend(taskData, noteData, newID); 
+                        console.log("task created with ID: ",newID ); // test 
 
-                        deadlineData.taskID = newID;
+                        this.createTaskOnFrontend(taskData, noteData, newID); 
+
+                        deadlineData.taskId = newID;
 
                         this.scheduleDeadlineCreation(deadlineData, noteData);
                     } // ideally would have a  else running this.deadlineCreationQueue.push(noteData); but i cant get newID from that just yet so :(
                     
+                } else if (deadlineData.error == null && deadlineData.taskId == null && deadlineData.formattedDateTime == null){
+                    let taskData = {id: null, title: "New Task with Deadline ", sub_task_of_task_id: null, made_from_note_id: this.noteID}
+
+                    if(!this.creatingTask){
+                        console.log("deadline has no task so creating one for it");
+                        let newID = await this.createTaskInDB(taskData, noteData);
+                        console.log("task created with ID: ",newID ); // test 
+
+                        this.createTaskOnFrontend(taskData, noteData, newID); 
+
+                        deadlineData["taskId"] = newID;
+                        console.log("setting taskId to: ",deadlineData["taskId"] ); // test 
+
+                        this.createDeadlineOnFrontend(deadlineData, noteData); // create on front end and then when updated will be added to db as update and create are the same thing for deadlines 
+                    } // ideally would have a  else running this.deadlineCreationQueue.push(noteData); but i cant get newID from that just yet so :(
                 }
                 else{
                     console.log(deadlineData.error);

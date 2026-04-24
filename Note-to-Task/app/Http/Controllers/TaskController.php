@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Throwable;
 
 class TaskController extends Controller
 {
@@ -72,27 +73,33 @@ class TaskController extends Controller
      */
     public function update(Request $request)
     {
+
         request()->validate([
             'id' => 'required|integer|exists:tasks,id',
             'title' => 'string|max:255',
             'deadline' => 'date'
         ]);
 
-        $id = $request->input('id');
-        $task = Task::findOrFail($id);
+        try{
+            $id = $request->input('id');
+            $task = Task::findOrFail($id);
+        
+            $updateArr = [];
+            if($request->input('title')){
+                $updateArr["title"] = $request->input('title');
+            }
 
-        $updateArr = [];
-        if($request->input('title')){
-            $updateArr["title"] = $request->input('title');
+            if($request->input('deadline')){
+                $updateArr["deadline"] = $request->input('deadline');
+            }
+
+            $task->update($updateArr);
+
+            return response()->json(['message' => 'Task updated successfully']);
+        }catch (Throwable $e){
+            return response()->json(['message' => "Task update failed ", "error" => $e->getMessage()], 500);
         }
-
-        if($request->input('deadline')){
-            $updateArr["deadline"] = $request->input('deadline');
-        }
-
-        $task->update($updateArr);
-
-        return response()->json(['message' => 'Task updated successfully']);
+        
     }
 
 
