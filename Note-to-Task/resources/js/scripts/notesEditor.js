@@ -19,7 +19,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                 selector: 'textarea#note-content',
                 plugins: 'lists link code',
                 extended_valid_elements: 'span[class|id], label[class|for], input[class|id|type|value|name]', // allow span tags with class and id attributes
-                keep_styles: false,
+                //keep_styles: false,
                 //content_css: "/resources/css/app.css",
                 content_style: `
                         .task {
@@ -237,8 +237,8 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                     this.editor.dom.remove(span, true);
                 }
                 const nbsp = this.editor.getDoc().createTextNode('\u00A0'); // non-breaking space
-                console.log("span.nextSibling: ", span.nextSibling);
-                console.log("span.nextSibling type: ", typeof(span.nextSibling.toString()));
+                //console.log("span.nextSibling: ", span.nextSibling);
+                //console.log("span.nextSibling type: ", typeof(span.nextSibling.toString()));
                 //let nextSiblingString = span.nextSibling.toString()
                 // if(!nextSiblingString.match(/&nbsp;/)){
                 //     this.editor.dom.insertAfter(nbsp, span)

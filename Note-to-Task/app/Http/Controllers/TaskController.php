@@ -76,8 +76,8 @@ class TaskController extends Controller
 
         request()->validate([
             'id' => 'required|integer|exists:tasks,id',
-            'title' => 'string|max:255',
-            'deadline' => 'date'
+            'title' => 'nullable|string|max:255',
+            'deadline' => 'nullable|date'
         ]);
 
         try{

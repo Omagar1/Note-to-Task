@@ -431,6 +431,13 @@ export default function taskActions(){
 
         async setDeadlineInDB(deadlineData){
             this.$store.savingElement.show();
+
+            let dateToDB = null
+            if (!deadlineData.deleting){
+                dateToDB = format(deadlineData.formattedDateTime, 'yyyy-MM-dd HH:mm:ss')// get the date in the format for DB
+            }
+            
+
             try {
                 //console.log(this.route)
                 const response = await fetch(this.routes.update, {
@@ -440,7 +447,7 @@ export default function taskActions(){
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': this.csrfToken
                     },
-                    body: JSON.stringify({id: deadlineData.taskId, deadline: format(deadlineData.formattedDateTime, 'yyyy-MM-dd HH:mm:ss')}) // get the date in the format for DB
+                    body: JSON.stringify({id: deadlineData.taskId, deadline: dateToDB}) 
                 });
 
                 console.log(response); // test 
@@ -507,22 +514,33 @@ export default function taskActions(){
 
         },
 
-        scheduleDeadlineUpdate(){
-
+        scheduleDeadlineUpdate(deadlineData){
+            this.setDeadlineInDB(deadlineData);
+            this.updateDeadlineOnFrontend(deadlineData);
         },
 
 
-        updateDeadlineOnFrontend(){
-
+        updateDeadlineOnFrontend(deadlineData){
+            let taskIndex = this.tasks.findIndex(task => task.id == deadlineData["taskId"]);
+            // console.log("deadlineData[taskId]: ", deadlineData["taskId"]); // test
+            // console.log("taskIndex: ", taskIndex); // test
+            // console.log("this.tasks[taskIndex]: ", this.tasks[taskIndex]); // test
+            this.tasks[taskIndex].deadline = deadlineData["date"];
         },
 
-        scheduleDeadlineDeletion(){
-
+        scheduleDeadlineDeletion(taskId){
+            this.setDeadlineInDB({taskId: taskId, deleting: true });
+            this.deleteDeadlineOnFrontend(taskId);
         },
 
 
-        deleteDeadlineOnFrontend(){
-
+        deleteDeadlineOnFrontend(taskId){
+            console.log("deleting deadline of task with Id: ", taskId); // test
+            let taskIndex = this.tasks.findIndex(task => task.id == taskId);
+            
+            console.log("taskIndex: ", taskIndex); // test
+            console.log("this.tasks[taskIndex]: ", this.tasks[taskIndex]); // test
+            this.tasks[taskIndex].deadline = null;
         },
 
         
@@ -545,9 +563,10 @@ export default function taskActions(){
         async detectDeadline(noteData){ // logic for when a task is detected in the note editor
             console.log("Deadline Detected with data:", noteData ); // test
             if (noteData["operation"] == "delete"){ 
-                //this.scheduleDeadlineDeletion(noteData);
+                this.scheduleDeadlineDeletion(noteData["id"]);
             } else if (noteData["operation"] == "update"){
-                //this.scheduleDeadlineUpdate(noteData);
+                let deadlineData = this.getDeadlineData(noteData);
+                this.scheduleDeadlineUpdate(deadlineData);
             } else if (noteData["operation"] == "create" && !this.creatingDeadline){ // to prevent multiple creations 
                 let deadlineData = this.getDeadlineData(noteData);
                 if(deadlineData.error == null && deadlineData.taskId !=null && deadlineData.formattedDateTime != null){
