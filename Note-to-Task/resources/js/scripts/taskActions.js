@@ -434,6 +434,7 @@ export default function taskActions(){
 
             let dateToDB = null
             if (!deadlineData.deleting){
+                console.log("deadlineData.formattedDateTime: ", deadlineData.formattedDateTime)
                 dateToDB = format(deadlineData.formattedDateTime, 'yyyy-MM-dd HH:mm:ss')// get the date in the format for DB
             }
             
@@ -542,6 +543,23 @@ export default function taskActions(){
             console.log("taskIndex: ", taskIndex); // test
             console.log("this.tasks[taskIndex]: ", this.tasks[taskIndex]); // test
             this.tasks[taskIndex].deadline = null;
+        },
+
+        updateDeadlineFromTaskCard(taskId){
+            console.log("update updateDeadlineFromTaskCard fired with id:", taskId); // test
+            //console.log("tasks: ", this.tasks); // test
+            
+            setTimeout( ()=>{
+                let taskIndex = this.tasks.findIndex(task => task.id == taskId);
+                let newDeadlineStr = this.tasks[taskIndex].deadline;
+                let newDeadlineDate = chrono.en.GB.parseDate(newDeadlineStr);
+                let formattedDeadlineStr = format(newDeadlineDate, "h:mm a dd/MM/yyyy")
+                console.log("newDeadlineDate: ", newDeadlineDate); 
+                //this.tasks[taskIndex].deadline = newDeadlineDate; // this is normally a date object but input tag writes over this as a str so rewriting as date
+                this.setDeadlineInDB({taskId: taskId, formattedDateTime: newDeadlineDate});
+                document.dispatchEvent(new CustomEvent('deadline-updated', { detail: { taskId:taskId , deadline: formattedDeadlineStr } })); // so the note editor can be updated
+            }, 1000)
+            
         },
 
         

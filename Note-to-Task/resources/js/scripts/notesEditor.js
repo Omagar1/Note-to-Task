@@ -36,7 +36,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                         font-weight: bold;
                         }
                     `,
-                toolbar: 'undo redo | fontfamily fontsize | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image table | code',
+                toolbar: 'undo redo | fontfamily fontsize | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table | code',
                 setup: (editor) => {
                     this.editor = editor;
                     this.editor.on( 'init', () => {
@@ -44,7 +44,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                         this.currentContent = editor.getContent();
                         this.lastSavedContent = editor.getContent();
 
-                        // event listener
+                        // ---- event listeners ----
                         document.addEventListener('highlight-task', (event) => {
                             const { taskId } = event.detail;
                             // Implementation for highlighting task
@@ -54,6 +54,11 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                                 this.editor.dom.removeClass(taskElement, 'task-selected');
                             }, { once: true });
                         });
+
+                        document.addEventListener('deadline-updated', (event) => {
+                            const { taskId, deadline } = event.detail;
+                            this.editor.dom.setHTML('deadlineRef'+taskId, "deadline: "+ deadline );
+                        })
                     });
                     this.editor.on('change keyup undo redo', () => {
                         console.log('Text changed');

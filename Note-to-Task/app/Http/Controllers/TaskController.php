@@ -85,11 +85,11 @@ class TaskController extends Controller
             $task = Task::findOrFail($id);
         
             $updateArr = [];
-            if($request->input('title')){
+            if($request->exists('title')){
                 $updateArr["title"] = $request->input('title');
             }
 
-            if($request->input('deadline')){
+            if($request->exists('deadline')){
                 $updateArr["deadline"] = $request->input('deadline');
             }
 
