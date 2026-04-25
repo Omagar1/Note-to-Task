@@ -156,7 +156,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                 console.log("keywordInDelta: ", keywordInDelta); // test
 
                 if (keywordInDelta && keywordRefInDEA && delta.deltaLength < 0){
-                    // deleting a keyword - trigger deletion of task
+                    // deleting a keyword 
         
                     let keywordId = keywordRefInDEA[0].replace(keyword.replace(/[:)#-_]/g, "") + "Ref", ''); 
                     console.log("Deleting ", keyword, " with id: ", keywordId);
@@ -213,6 +213,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': this.csrfToken
                     },
                     body: JSON.stringify({ content: this.currentContent, id: this.noteId })
@@ -222,7 +223,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                     throw new Error('Network response was not ok');
                 }
 
-                const data = await response.json();
+                //const data = await response.json();
                 console.log(data.message);
                 this.$store.savingElement.hide();
 

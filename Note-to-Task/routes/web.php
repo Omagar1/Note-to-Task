@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\KeywordController;
 use Symfony\Component\Routing\Loader\Configurator\Routes;
 
 
@@ -27,7 +28,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/task/delete', [TaskController::class, 'destroy'])->name('task.delete');
     Route::post('/task/toggleComplete', [TaskController::class, 'set_complete'])->name('task.toggleComplete');
 
-    Route::get('settings', function () {
+    // key word stuff
+    Route::get('/keyword', [KeywordController::class, 'index'])->name("keyword"); 
+    Route::post('/keyword/create', [KeywordController::class, 'store'])->name('keyword.create');
+    Route::post('/keyword/update', [KeywordController::class, 'update'])->name('keyword.update');
+    Route::post('/keyword/delete', [KeywordController::class, 'destroy'])->name('keyword.delete'); 
+
+    Route::get('settings', function () { // no such rout atm
         return view('settings');
     })->name('settings');
 });

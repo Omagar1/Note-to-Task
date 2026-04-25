@@ -16,6 +16,7 @@
                 </div>
             </div>
             <div>
+                <a href="{{ route('keyword') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Customise keywords</a>
                 <a href="{{ route('dashboard') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
                 <a href="{{ route('settings') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Settings</a>
                 <form action="{{ route('logout') }}" method="POST" class="inline">

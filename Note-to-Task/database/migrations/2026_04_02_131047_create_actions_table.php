@@ -15,7 +15,13 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description');
+            $table->string('default_trigger_word');
         });
+
+        DB::table('actions')->insert([
+            ["name" => "task", "description" => "creates a task", "default_trigger_word" => "task:"],
+            ["name" => "deadline", "description" => "creates a deadline for a task, if used outside a task creates a new task", "default_trigger_word" => "deadline:"]
+        ]);
     }
 
     /**

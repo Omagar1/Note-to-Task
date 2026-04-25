@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\Keyword;
+use App\models\Action;
 
 class UserController extends Controller
 {
@@ -29,7 +31,6 @@ class UserController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
-            // Authentication passed...
             return redirect()->intended('dashboard');
         }
 
@@ -51,6 +52,17 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        // adding default keywords to user's profile based off actions table
+        $actions = Action::all();
+        $keywords = [];
+        foreach($actions as $actionData){
+            array_push($keywords, ["trigger_word" => $actionData->default_trigger_word, "action_id" =>  $actionData->id, "user_id" => $user->id]);
+        }
+
+        Keyword::insert($keywords);
+
+
 
         Auth::login($user);
 
