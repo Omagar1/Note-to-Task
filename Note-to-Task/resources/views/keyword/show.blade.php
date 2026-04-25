@@ -31,8 +31,12 @@
                         
                         <div>
                             <label> Creates a: </label>  
-                            <p class="text-base">{{ $keyword_data->actionData->name}}</p>
-                        </div>
+                            <button x-show ="!editingAction" @click="editingAction = true, justSaved = false"><h3 x-text="actionName" class="font-bold border-gray-300 rounded-lg p-2 w-full"></h3></button>
+                            <select x-show ="editingAction" name="action{{ $keyword_data->id }}" id="cars">
+                                @foreach ($actions as  $action_data)
+                                    <option value="{{$action_data->id}}" {{ ($action_data->id == $keyword_data->action_data->id)? "selected" : ""}}>{{$action_data->name}}</option>
+                                @endforeach
+                            </select>
                         <button @click="deleteKeyword()" class=" bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mb-2">
                             Delete
                         </button>

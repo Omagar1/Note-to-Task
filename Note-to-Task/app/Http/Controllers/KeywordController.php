@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Keyword;
+use App\Models\Action;
 use Illuminate\Http\Request;
 use Throwable;
 
@@ -13,9 +14,10 @@ class KeywordController extends Controller
      */
     public function index()
     {
-        $keywords = Keyword::where('user_id', auth()->id())->with('actionData')->get();
+        $keywords = Keyword::where('user_id', auth()->id())->with('action_data')->get();
+        $actions = Action::all();
 
-        return view('keyword.show', ["keywords"=> $keywords ]);
+        return view('keyword.show', ["keywords"=> $keywords, "actions" => $actions]);
     }
 
     /**

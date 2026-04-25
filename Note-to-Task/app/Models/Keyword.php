@@ -13,7 +13,7 @@ class Keyword extends Model
         'user_id'
     ];
 
-    public function actionData(){
+    public function action_data(){
         return $this->belongsTo(Action::class, "action_id");
     }
 
