@@ -9,10 +9,12 @@ export default function taskActions(){
         routes: null,
         tasks: null,
         taskCreationQueue: [], // to hold task creations that are triggered while a task creation is already in progress
+        deadlineCreationQueue: [], // ditto as above
         csrfToken: null,
         keyword: "task:",
         creatingTask: false, // to prevent multiple creations of the same task when the keyword is detected multiple times in a row as the user types
         helperScripts: helperScripts,
+        keywords: ["task:", "deadline:"], // will be loaded in from DB 
 
         async init(noteID, routes, tasks){
             this.noteID = noteID;
@@ -48,6 +50,13 @@ export default function taskActions(){
             console.log("indexOfKeyword: ", indexOfKeyword);
             let taskTitleStartIndex = indexOfKeyword + noteData["keyword"].length; 
             let taskTitleEndIndex = noteData["newContentText"].indexOf('<', taskTitleStartIndex);
+            let keywordInTitle = this.keywords.find(keyword =>noteData["newContentText"].includes(keyword, taskTitleStartIndex))
+            if(keywordInTitle){
+                taskTitleEndIndex = noteData["newContentText"].indexOf(keywordInTitle, taskTitleStartIndex);
+            }
+            console.log("taskTitleEndIndex:", taskTitleEndIndex); // test
+            console.log("keywordInTitle:", keywordInTitle); // test
+
             let taskTitle = noteData["newContentText"].substring(taskTitleStartIndex, taskTitleEndIndex).trim();
             
             if(taskTitle === "" || taskTitle === "&nbsp;"){ // if there is no title after the keyword, give it a default title
@@ -162,12 +171,12 @@ export default function taskActions(){
                 
 
                 // for note editor
-                newNoteContent = noteContent.substring(0, taskStartIndex) + `<span class="sub-task" id="taskRef${newId}">` + noteContent.substring(taskStartIndex, taskEndIndex) + `</span> &nbsp;` + noteContent.substring(taskEndIndex)  
+                newNoteContent = noteContent.substring(0, taskStartIndex) + `<span class="sub-task" id="taskRef${newId}">` + noteContent.substring(taskStartIndex, taskEndIndex) + `</span>` + noteContent.substring(taskEndIndex)  
             }else{ // main task
                 // for task list 
                 this.tasks.push(taskData);
                 // for note editor 
-                newNoteContent = noteContent.substring(0, taskStartIndex) + `<span class="task" id="taskRef${newId}">` + noteContent.substring(taskStartIndex, taskEndIndex) + `</span> &nbsp;` + noteContent.substring(taskEndIndex)   
+                newNoteContent = noteContent.substring(0, taskStartIndex) + `<span class="task" id="taskRef${newId}">` + noteContent.substring(taskStartIndex, taskEndIndex) + `</span>` + noteContent.substring(taskEndIndex)   
             }
             
 
@@ -177,11 +186,16 @@ export default function taskActions(){
             const newTask = noteData["noteEditor"].dom.get(`taskRef${newId}`); // element inside editor
             noteData["noteEditor"].selection.select(newTask, true);
             noteData["noteEditor"].selection.collapse(false); // move to end
-
+            if (taskData.sub_task_of_task_id){ // not a sub task)
+                //noteData["noteEditor"].execCommand('InsertLineBreak');
+            }else{
+                noteData["noteEditor"].execCommand('InsertLineBreak');
+            }
             console.log("Task created with id: ", newId); // test
             this.creatingTask = false;
 
             document.dispatchEvent(new CustomEvent('task-created', { detail: { taskId: newId, noteId: this.noteID } })); // to notify other components that a task was created so they can update if needed
+            this.processDeadlineCreationQueue();
             this.processTaskCreationQueue();
         },
 
@@ -562,6 +576,15 @@ export default function taskActions(){
             
         },
 
+        processDeadlineCreationQueue(){ // to process any task creations that were triggered while a task creation was already in progress
+            if (this.deadlineCreationQueue.length > 0){
+                let nextNoteData = this.deadlineCreationQueue.shift();
+                // creating the task as normal
+                let deadlineData = this.getDeadlineData(nextNoteData);
+                this.scheduleDeadlineCreation(deadlineData, nextNoteData);
+            }
+        },
+
         
         // --- detector stuff --- 
         detectTask(noteData){ // logic for when a task is detected in the note editor
@@ -586,7 +609,7 @@ export default function taskActions(){
             } else if (noteData["operation"] == "update"){
                 let deadlineData = this.getDeadlineData(noteData);
                 this.scheduleDeadlineUpdate(deadlineData);
-            } else if (noteData["operation"] == "create" && !this.creatingDeadline){ // to prevent multiple creations 
+            } else if (noteData["operation"] == "create" && !this.creatingTask){ // to prevent multiple creations 
                 let deadlineData = this.getDeadlineData(noteData);
                 if(deadlineData.error == null && deadlineData.taskId !=null && deadlineData.formattedDateTime != null){
                     this.scheduleDeadlineCreation(deadlineData, noteData);
@@ -628,9 +651,9 @@ export default function taskActions(){
                     console.log(deadlineData.error);
                 }
                 
-            } else if (noteData["operation"] == "create" && this.creatingTask){
-                //console.log("Already creating task, adding task creation to queue"); // test
-                //this.deadlineCreationQueue.push(noteData);
+            } else if (noteData["operation"] == "create" && this.creatingTask){ // to allow time for task to get id and span tag inserted
+                console.log("task being created waiting till that completes"); // test
+                this.deadlineCreationQueue.push(noteData);
             }
         }
 
