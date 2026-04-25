@@ -58,6 +58,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken} )
                         document.addEventListener('deadline-updated', (event) => {
                             const { taskId, deadline } = event.detail;
                             this.editor.dom.setHTML('deadlineRef'+taskId, "deadline: "+ deadline );
+                            this.currentContent = this.editor.getContent(); // updating so it doesn't effect delta 
                         })
                     });
                     this.editor.on('change keyup undo redo', () => {

@@ -425,14 +425,14 @@ export default function taskActions(){
                 }
             }
             // checking to see if task already has a deadline
-            let taskIndex = this.tasks.findIndex(task => task.id == taskId);
-            if(taskIndex != -1){ 
-                console.log("taskIndex: ", taskIndex); // test
-                console.log("this.tasks[taskIndex]: ", this.tasks[taskIndex]); // test
-                if (this.tasks[taskIndex].deadline != null ){
-                    return {error: "task already has a deadline!"}
-                }
-            }    
+            // let taskIndex = this.tasks.findIndex(task => task.id == taskId);
+            // if(taskIndex != -1){ 
+            //     console.log("taskIndex: ", taskIndex); // test
+            //     console.log("this.tasks[taskIndex]: ", this.tasks[taskIndex]); // test
+            //     if (this.tasks[taskIndex].deadline != null ){
+            //         return {error: "task already has a deadline!"}
+            //     }
+            // }    
 
             return {taskId: taskId, rawDateTime: deadlineDate, formattedDateTime: formattedDate}
 
@@ -510,7 +510,7 @@ export default function taskActions(){
             console.log("deadlineData[taskId]: ", deadlineData["taskId"]); // test
             console.log("taskIndex: ", taskIndex); // test
             console.log("this.tasks[taskIndex]: ", this.tasks[taskIndex]); // test
-            this.tasks[taskIndex].deadline = deadlineData["date"];
+            this.tasks[taskIndex].deadline = format(deadlineData["formattedDateTime"], "yyyy-MM-dd'T'HH:mm" );
             
 
             // for note editor 
@@ -527,6 +527,7 @@ export default function taskActions(){
 
             document.dispatchEvent(new CustomEvent('deadline-created', { detail: { taskId: deadlineData["taskId"], noteId: this.noteID } })); // to notify other components that a task was created so they can update if needed
             //this.processDeadlineCreationQueue();
+            console.log("tasks:", this.tasks);
 
         },
 
@@ -541,7 +542,7 @@ export default function taskActions(){
             // console.log("deadlineData[taskId]: ", deadlineData["taskId"]); // test
             // console.log("taskIndex: ", taskIndex); // test
             // console.log("this.tasks[taskIndex]: ", this.tasks[taskIndex]); // test
-            this.tasks[taskIndex].deadline = deadlineData["date"];
+            this.tasks[taskIndex].deadline = format(deadlineData["formattedDateTime"], "yyyy-MM-dd'T'HH:mm" );
         },
 
         scheduleDeadlineDeletion(taskId){
@@ -553,10 +554,13 @@ export default function taskActions(){
         deleteDeadlineOnFrontend(taskId){
             console.log("deleting deadline of task with Id: ", taskId); // test
             let taskIndex = this.tasks.findIndex(task => task.id == taskId);
-            
             console.log("taskIndex: ", taskIndex); // test
-            console.log("this.tasks[taskIndex]: ", this.tasks[taskIndex]); // test
-            this.tasks[taskIndex].deadline = null;
+            if(taskIndex >= 0 ){ // if not task in task then task has already been deleted 
+                console.log("taskIndex: ", taskIndex); // test
+                console.log("this.tasks[taskIndex]: ", this.tasks[taskIndex]); // test
+                this.tasks[taskIndex].deadline = null;
+            }
+            
         },
 
         updateDeadlineFromTaskCard(taskId){
@@ -608,6 +612,7 @@ export default function taskActions(){
                 this.scheduleDeadlineDeletion(noteData["id"]);
             } else if (noteData["operation"] == "update"){
                 let deadlineData = this.getDeadlineData(noteData);
+                console.log("deadlineData:" , deadlineData); // test 
                 this.scheduleDeadlineUpdate(deadlineData);
             } else if (noteData["operation"] == "create" && !this.creatingTask){ // to prevent multiple creations 
                 let deadlineData = this.getDeadlineData(noteData);
