@@ -9,7 +9,7 @@ class Keyword extends Model
 {
     protected $fillable = [
         'trigger_word',
-        'action_id ',
+        'action_id',
         'user_id'
     ];
 

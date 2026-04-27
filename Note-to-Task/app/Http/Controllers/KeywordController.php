@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Keyword;
 use App\Models\Action;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Throwable;
+
 
 class KeywordController extends Controller
 {
@@ -34,19 +36,20 @@ class KeywordController extends Controller
     public function store(Request $request)
     {
         request()->validate([
-            'trigger_word' => 'required|unique|string|max:255',
+            'trigger_word' => ['required', 'string', 'max:255', Rule::unique('keywords', 'trigger_word')->where('user_id', auth()->id()) ],
             'action_id' => 'required|integer|exists:actions,id'
         ]);
 
-        $task = Keyword::create([
+        $keyword = Keyword::create([
             'trigger_word' => $request->input('trigger_word'),
             'action_id' => $request->input('action_id'),
+            'user_id' => auth()->id()
         ]);
 
-        if ($task) {
-            return response()->json(['message' => 'Task created successfully']);
+        if ($keyword) {
+            return response()->json(['message' => 'keyword created successfully', 'id'=>$keyword->id  ]);
         } else {
-            return response()->json(['message' => 'Failed to create task']);
+            return response()->json(['message' => 'Failed to create keyword']);
         }
         
     }
@@ -73,12 +76,10 @@ class KeywordController extends Controller
     public function update(Request $request)
     {
 
-        try{
-
             request()->validate([
                 'id' => 'required|integer|exists:keywords,id',
-                'trigger_word' => 'sometimes|unique:keywords,trigger_word|string|max:255',
-                'action_id' => 'sometimes|integer|exists:actions,id'
+                'trigger_word' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('keywords', 'trigger_word')->where('user_id', auth()->id()) ],
+                'action_id' => 'sometimes|required|integer|exists:actions,id'
                 
             ]);
 
@@ -86,20 +87,17 @@ class KeywordController extends Controller
             $keyword = Keyword::findOrFail($id);
         
             $updateArr = [];
-            if($request->exists('trigger_word')){
+            if($request->filled('trigger_word')){
                 $updateArr["trigger_word"] = $request->input('trigger_word');
             }
 
-            if($request->exists('action_id')){
+            if($request->filled('action_id')){
                 $updateArr["action_id"] = $request->input('action_id');
             }
 
             $keyword->update($updateArr);
 
-            return response()->json(['message' => 'keyword updated successfully', 'id' => $id ]);
-        }catch (Throwable $e){
-            return response()->json(['message' => "keyword update failed ", "error" => $e->getMessage(), 'id' => $id, 'dd'=> dd($request->all())], 500);
-        }
+            return response()->json(['message' => 'keyword updated successfully', 'id' => $id, 'updateArr' => $updateArr]);
     }
 
     /**
