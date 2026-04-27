@@ -62,8 +62,25 @@ class TaskController extends Controller
 
         if( $task->completed_at == null ){
             $task->update(['completed_at' => date('Y-m-d H:i:s') ]);
+            // see if sub task to set the main task as complete too
+            if($task->sub_task_of_task_id != null){
+                $sub_tasks = $task->get_sub_tasks()->get();
+                //$allSame = array_all($objects, fn($obj) => $obj->status === 'active');   
+                $allComplete = array_all($sub_tasks, fn($sub_task) => $sub_task->completed_at != null);
+
+                if($allComplete){
+                    $main_task = Task::findOrFail($task->sub_task_of_task_id);
+                    $main_task->update(['completed_at' => date('Y-m-d H:i:s') ]);
+                }
+            }
+
         }else{
             $task->update(['completed_at' => null ]);
+            // see if sub task to set the main task as incomplete too
+            if($task->sub_task_of_task_id != null){
+                $main_task = Task::findOrFail($task->sub_task_of_task_id);
+                $main_task->update(['completed_at' => null ]);
+            }
         }
         
     }

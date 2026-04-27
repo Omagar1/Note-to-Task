@@ -6,10 +6,12 @@
 
 
 @section('mainContent')
+    <h1 class="text-5xl font-bold mb-4"> Welcome {{ auth()->user()->username }}</h1>
     <div class="grid grid-rows-2 lg:grid-cols-2 gap-4">
+        
         <div class="w-full h-full flex flex-col items-start justify-start content-start ">
             <div class = "sticky top-0 w-full bg-white p-4 shadow-md" >
-                <h1 class="text-4xl font-bold mb-4">Note Pages:</h1> 
+                <h2 class="text-4xl font-bold mb-4">Note Pages:</h2> 
                 <!-- insert search bar code here once made   -->
                 <!-- insert filter code here once made   -->
             </div>
@@ -41,7 +43,7 @@
 
         <div class="w-full h-full flex flex-col items-start justify-start content-start bg-gray-100 p-4">
                 <div class = "sticky top-0">
-                    <h1 class="text-4xl font-bold mb-4">Active Tasks</h1> 
+                    <h2 class="text-4xl font-bold mb-4">Active Tasks</h2> 
                     <!-- insert search bar code here once made   -->
                     <!-- insert filter code here once made   -->
                 
