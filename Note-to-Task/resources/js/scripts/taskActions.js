@@ -14,14 +14,15 @@ export default function taskActions(){
         keyword: "task:",
         creatingTask: false, // to prevent multiple creations of the same task when the keyword is detected multiple times in a row as the user types
         helperScripts: helperScripts,
-        keywords: ["task:", "deadline:"], // will be loaded in from DB 
+        keywords: null, // will be loaded in from DB in init()
 
-        async init(noteID, routes, tasks){
+        async init(noteID, routes, tasks, keywords){
             this.noteID = noteID;
             this.routes = routes;
             //this.tasks = [{title: "test", id: "test"}]
             this.tasks = tasks ? tasks : [] ;
             this.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            this.keywords = keywords;
 
             console.log("tasks: ", this.tasks);
             
@@ -41,16 +42,17 @@ export default function taskActions(){
             
             let taskId = noteData["id"] ? parseInt(noteData["id"]) : null; 
 
-            let indexOfKeyword = noteData["newContentText"].indexOf(noteData["keyword"]);
+            let indexOfKeyword = noteData["newContentText"].indexOf(noteData["triggerWord"]);
 
             //console.log("Indexes: ", indexesOfKeyword);// test
             //console.log("Current content: ", noteContent);// test
 
             // getting title
+            console.log("this.keywords: ", this.keywords);//test
             console.log("indexOfKeyword: ", indexOfKeyword);
-            let taskTitleStartIndex = indexOfKeyword + noteData["keyword"].length; 
+            let taskTitleStartIndex = indexOfKeyword + noteData["triggerWord"].length; 
             let taskTitleEndIndex = noteData["newContentText"].indexOf('<', taskTitleStartIndex);
-            let keywordInTitle = this.keywords.find(keyword =>noteData["newContentText"].includes(keyword, taskTitleStartIndex))
+            let keywordInTitle = this.keywords.find(keyword =>noteData["newContentText"].includes(keyword.trigger_word, taskTitleStartIndex))
             if(keywordInTitle){
                 taskTitleEndIndex = noteData["newContentText"].indexOf(keywordInTitle, taskTitleStartIndex);
             }
@@ -76,8 +78,7 @@ export default function taskActions(){
 
             let parentTaskId = null
             if(parentSpanTag){
-                let keywordRefRegex = new RegExp(noteData["keyword"].replace(/[:)#-_]/g, "") + "Ref(\\d+)"); // escape special characters in keyword for regex
-            // get the id of the parent task if there is a match
+                let keywordRefRegex = new RegExp(noteData["actionName"] + "Ref(\\d+)"); 
             let match = parentSpanTag.id.match(keywordRefRegex);
             
             console.log("match: ", match); // test
@@ -103,7 +104,7 @@ export default function taskActions(){
             this.$store.savingElement.show();
 
             let noteContent = noteData["noteEditor"].getContent();
-            let indexesOfKeyword = helperScripts.getIndicesOf(noteData["keyword"], noteContent, false);
+            let indexesOfKeyword = helperScripts.getIndicesOf(noteData["triggerWord"], noteContent, false);
             
             // store in db 
             let newId = null; // to hold the new id from the db after creation
@@ -149,7 +150,7 @@ export default function taskActions(){
             console.log("this.tasks: ", this.tasks)
 
             let noteContent = noteData["noteEditor"].getContent();
-            let indexesOfKeyword = helperScripts.getIndicesOf(noteData["keyword"], noteContent, false);
+            let indexesOfKeyword = helperScripts.getIndicesOf(noteData["triggerWord"], noteContent, false);
 
             // set id in note editor
             //const cursorPos = noteData["noteEditor"].selection.getBookmark(); // to save the cursor position so we can put it back after changing the content and losing the cursor position
@@ -384,14 +385,14 @@ export default function taskActions(){
 
             let taskId = noteData["id"] ? parseInt(noteData["id"]) : null; 
 
-            let indexOfKeyword = noteData["newContentText"].indexOf(noteData["keyword"]);
+            let indexOfKeyword = noteData["newContentText"].indexOf(noteData["triggerWord"]);
 
             //console.log("Indexes: ", indexesOfKeyword);// test
             //console.log("Current content: ", noteContent);// test
 
             // getting title
             console.log("indexOfKeyword: ", indexOfKeyword);
-            let deadlineStartIndex = indexOfKeyword + noteData["keyword"].length; 
+            let deadlineStartIndex = indexOfKeyword + noteData["triggerWord"].length; 
             let deadlineEndIndex = noteData["newContentText"].indexOf('<', deadlineStartIndex);
             let deadlineDate = noteData["newContentText"].substring(deadlineStartIndex, deadlineEndIndex).trim();
             
@@ -494,7 +495,7 @@ export default function taskActions(){
             console.log("received deadline data: ", deadlineData); /// test
 
             let noteContent = noteData["noteEditor"].getContent();
-            let indexesOfKeyword = helperScripts.getIndicesOf(noteData["keyword"], noteContent, false);
+            let indexesOfKeyword = helperScripts.getIndicesOf(noteData["triggerWord"], noteContent, false);
 
             // set id in note editor
             //const cursorPos = noteData["noteEditor"].selection.getBookmark(); // to save the cursor position so we can put it back after changing the content and losing the cursor position

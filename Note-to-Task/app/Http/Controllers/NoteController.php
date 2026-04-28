@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Route;
 use Throwable;
 use App\Models\Task;
+use App\Models\Keyword;
+
 
 
 class NoteController extends Controller
@@ -38,14 +40,10 @@ class NoteController extends Controller
 
     public function show(Note $note)
     {
-        $tasks = Task::where('made_from_note_id', $note->id)->where('sub_task_of_task_id', null)->get();
-        foreach ($tasks as $task)
-        {
-            $sub_tasks = Task::where('sub_task_of_task_id', $task->id)->get();
-            $task->sub_tasks = $sub_tasks;
-        }
+        $tasks = Task::where('made_from_note_id', $note->id)->where('sub_task_of_task_id', null)->with('sub_tasks')->get();
+        $keywords = Keyword::with('action_data')->where('user_id', auth()->id())->get();
 
-        return view('note.show', ['note' => $note, 'tasks' => $tasks]);
+        return view('note.show', ['note' => $note, 'tasks' => $tasks, 'keywords' => $keywords]);
     }
 
 

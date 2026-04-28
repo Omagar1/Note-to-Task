@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Note;
+use App\Models\Keyword;
 
 class User extends Authenticatable
 {
@@ -51,5 +52,9 @@ class User extends Authenticatable
     public function notes()
     {
         return $this->hasMany(Note::class, 'user_id');
+    }
+    public function keywords()
+    {
+        return $this->hasMany(Keyword::class, 'user_id');
     }
 }

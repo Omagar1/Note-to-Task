@@ -18,14 +18,20 @@
         <div class="flex flex-col min-h-screen">
         @auth
         <main class = "flex-grow gap-4 p-4 sm:mx-8 h-full">
+                @yield('mainContent')
+        </main>
         @endauth
 
         @guest
-        <main class = "flex-grow gap-4 p-4 sm:mx-8 md:mx-16 md:mt-10 lg:mx-32 lg:mt-20 xl:mx-64 xl:mt-20 2xl:mx-96 2xl:mt-20 shadow-2xl ">
+        <main class = "gap-4 p-4 sm:mx-8 md:mx-16 md:mt-10 lg:mx-32 lg:mt-20 xl:mx-64 xl:mt-20 2xl:mx-96 2xl:mt-20 shadow-2xl ">
+                @yield('mainContent')
+        </main>
+        <div class="flex-grow">
+            <!-- filler  -->
+        </div>
         @endguest
     
-            @yield('mainContent')
-        </main>
+        
 
         <footer class = "bottom-0 w-full bg-gray-800 text-white text-center py-4">
             @yield('footer')
