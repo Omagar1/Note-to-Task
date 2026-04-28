@@ -19,7 +19,10 @@ class NoteController extends Controller
     {
         // will also have tasks once made
         $notes = Note::where('user_id', auth()->id())->get();
-        return view('dashboard', ['notes' => $notes]);
+        $tasks = Task::whereHas('note_data', function ($qry){
+            $qry->where('user_id', auth()->id());
+        })->get();
+        return view('dashboard', ['notes' => $notes, 'tasks' => $tasks]);
     }
 
     /**
