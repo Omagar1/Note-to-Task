@@ -10,7 +10,7 @@
     <div class="grid grid-rows-2 lg:grid-cols-2 gap-4">
         
         <div class="w-full h-full flex flex-col items-start justify-start content-start ">
-            <div class = "sticky top-0 w-full bg-white p-4 shadow-md" >
+            <div class = "sticky top-0 w-full bg-white p-4" >
                 <h2 class="text-4xl font-bold mb-4">Note Pages:</h2> 
                 <!-- insert search bar code here once made   -->
                 <!-- insert filter code here once made   -->

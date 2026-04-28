@@ -23,17 +23,23 @@
                     
                     <h2> keyword: {{ $keyword_data->id }}</h2>
                     <div class ="grid, grid-cols-2">
-                        <div class ="w-full flex items-center justify-start gap-2 content-center">
+                        <div class ="w-full flex items-center justify-start gap-2 py-2 content-center">
                             <label for="triggerWordInput{{ $keyword_data->id }}">Trigger word: </label>
-                            <button x-show ="!editingTriggerWord" @click="editingTriggerWord = true, justSaved = false"><h3 x-text="triggerWord" class="font-bold border-gray-300 rounded-lg p-2 w-full"></h3></button>
+                            <button x-show ="!editingTriggerWord" @click="editingTriggerWord = true, justSaved = false" class = "hover:bg-gray-100 rounded"><h3 x-text="triggerWord" class="font-bold border-gray-300 rounded-lg p-2 w-full"></h3></button>
                             <input x-show="editingTriggerWord" @keydown.enter="updateTriggerWord({{ $keyword_data->id }})" @blur="updateTriggerWord({{ $keyword_data->id }})"  id="triggerWordInput{{ $keyword_data->id }}" name="triggerWordInput{{ $keyword_data->id }}" type="text" x-model="triggerWord" class=" font-bold border-2 border-gray-300 rounded-lg p-2 w-full">
                         </div>
                         
-                        <div>
+                        <div class ="w-full flex items-center justify-start gap-2 py-2 content-center">
                             <label for="action{{ $keyword_data->id }}" > Creates a: </label>  
                             <select @keydown.enter="updateAction({{ $keyword_data->id }})" @blur="updateAction({{ $keyword_data->id }})" x-model="actionId" name="action{{ $keyword_data->id }}" id="action{{ $keyword_data->id }}">
                                 @foreach ($actions as  $action_data)
                                     <option value="{{$action_data->id}}" {{ ($action_data->id == $keyword_data->action_data->id)? "selected" : ""}}>{{$action_data->name}}</option>
+                                @endforeach
+                            </select>
+
+                            <select @keydown.enter="updateAction({{ $keyword_data->id }})" @blur="updateAction({{ $keyword_data->id }})" x-model="actionId" name="action{{ $keyword_data->id }}" id="action{{ $keyword_data->id }}">
+                                @foreach ($actions as  $action_data)
+                                    <option value="{{$action_data->id}}" {{ ($action_data->id == $keyword_data->action_data->id)? "selected" : ""}}>{{$action_data->description}}</option>
                                 @endforeach
                             </select>
                         </div>
