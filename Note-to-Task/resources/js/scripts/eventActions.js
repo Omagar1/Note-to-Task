@@ -27,10 +27,9 @@ export const eventActions = {
 
     // note there is no way to update the event title this is intentional as the event title is the trigger word 
     getEventData(noteData){
-        let taskId = null; 
         let id = noteData["id"] ? parseInt(noteData["id"]) : null; 
         let indexOfKeyword = noteData["newContentText"].indexOf(noteData["triggerWord"]);
-
+        let taskId = null
         //console.log("Indexes: ", indexesOfKeyword);// test
         //console.log("Current content: ", noteContent);// test
 
@@ -51,24 +50,29 @@ export const eventActions = {
         console.log("formattedDate: ", formattedDate);
 
 
+        try {
         
-        if(!id){// if id is null it means it is a new event so need to check for tasks tag
-            const parentSpanTag = noteData["noteEditor"].dom.getParent(noteData["noteEditor"].selection.getNode(), 'span')
-            
-            //console.log("parentSpanTag: ", parentSpanTag); // test
-            //console.log("parentSpanTag.id: ", parentSpanTag.id); // test
+        const currentSpan = noteData["noteEditor"].dom.getParent(noteData["noteEditor"].selection.getNode(), 'span') 
+        const parentSpanTag =  noteData["noteEditor"].dom.getParent(currentSpan.parentNode, 'span') ? noteData["noteEditor"].dom.getParent(currentSpan.parentNode, 'span') : null; // the parent is the tag we are in so to get the true parent we do it twice
+        // console.log("currentSpan: ", currentSpan); // test
+        // console.log("parentSpanTag: ", parentSpanTag); // test
+        // console.log("parentSpanTag.id: ", parentSpanTag.id); // test
 
-            
-            if(parentSpanTag){
-                let keywordRefRegex = new RegExp("taskRef(\\d+)"); 
+        
+        if(parentSpanTag){
+            let keywordRefRegex = new RegExp("taskRef(\\d+)"); 
             // get the id of the parent task if there is a match
             let match = parentSpanTag.id.match(keywordRefRegex);
             
             console.log("match: ", match); // test
 
             taskId = match ? parseInt(match[1]) : null; // if there is a match, get the id, otherwise set to null
-            }
         }
+
+        } catch{
+            taskId = null; 
+        }
+        
         // checking to see if task already has a event
         // let taskIndex = this.tasks.findIndex(task => task.id == taskId);
         // if(taskIndex != -1){ 
@@ -237,10 +241,12 @@ export const eventActions = {
 
 
     updateEventOnFrontend(eventData){
+        console.log("taskId: ", eventData["taskId"]); // test
+        console.log("tasks: ", this.tasks); // test
         let taskIndex = this.tasks.findIndex(task => task.id == eventData["taskId"]);
-        // console.log("eventData[taskId]: ", eventData["taskId"]); // test
-        // console.log("taskIndex: ", taskIndex); // test
-        // console.log("this.tasks[taskIndex]: ", this.tasks[taskIndex]); // test
+        console.log("eventData[taskId]: ", eventData["taskId"]); // test
+        console.log("taskIndex: ", taskIndex); // test
+        console.log("this.tasks[taskIndex]: ", this.tasks[taskIndex]); // test
         let eventIndex = this.tasks[taskIndex].events.findIndex(event => event.id == eventData["id"]);
         this.tasks[taskIndex].events[eventIndex].event_date_time = format(eventData["formattedDateTime"], "yyyy-MM-dd'T'HH:mm" );
     },

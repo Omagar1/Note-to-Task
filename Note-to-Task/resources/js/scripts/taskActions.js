@@ -50,9 +50,12 @@ export const taskActions = {
         let taskTitleStartIndex = indexOfKeyword + noteData["triggerWord"].length; 
         let taskTitleEndIndex = noteData["newContentText"].indexOf('<', taskTitleStartIndex);
         let keywordInTitle = this.keywords.find(keyword =>noteData["newContentText"].includes(keyword.trigger_word, taskTitleStartIndex))
+        console.log("keywordInTitle: ", keywordInTitle); // test
+        console.log("taskTitleEndIndex:", taskTitleEndIndex); // test
         if(keywordInTitle){
-            taskTitleEndIndex = noteData["newContentText"].indexOf(keywordInTitle, taskTitleStartIndex);
+            taskTitleEndIndex = noteData["newContentText"].indexOf(keywordInTitle.trigger_word, taskTitleStartIndex);
         }
+        console.log("taskTitleStartIndex:", taskTitleStartIndex); // test
         console.log("taskTitleEndIndex:", taskTitleEndIndex); // test
         console.log("keywordInTitle:", keywordInTitle); // test
 
