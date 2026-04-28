@@ -58,13 +58,14 @@ export const taskActions = {
 
         let taskTitle = noteData["newContentText"].substring(taskTitleStartIndex, taskTitleEndIndex).trim();
         
-        if(taskTitle === "" || taskTitle === "&nbsp;"){ // if there is no title after the keyword, give it a default title
-            taskTitle = "New Task";
-        }
-
         taskTitle = taskTitle.replace(/&nbsp;/g, ' '); 
         taskTitle = taskTitle.replace(/<br>/g, ' '); 
         taskTitle = taskTitle.trim(); 
+        
+        if(taskTitle === "" || taskTitle === "&nbsp;" || taskTitle === " "){ // if there is no title after the keyword, give it a default title
+            taskTitle = "New Task";
+        }
+        
         console.log("Task title:", taskTitle);// test 
         
         // seeing if task is a sub task by looking for a parent task tag before it and seeing if it has an id

@@ -157,17 +157,18 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken, k
                 //console.log("sent to ",dispatchName); // test
 
                 let actionNameRefRegex = new RegExp(keyword.action_data.name + "Ref(\\d+)"); 
-                let triggerWordRegex = new RegExp(keyword.trigger_word.replace(/[:)#-_]/g, "\\$&")); 
+                let triggerWordRegex = new RegExp(keyword.trigger_word); 
 
             
                 let actionNameRefInDEA = deltaEffectArea.match(actionNameRefRegex);
                 let triggerWordInDelta = delta.deltaText.match(triggerWordRegex);
+                let triggerWordInDEA = deltaEffectArea.match(triggerWordRegex);
 
                 console.log("actionNameRefInDEA: ", actionNameRefInDEA); // test
                 console.log("triggerWordInDelta: ", triggerWordInDelta); // test
 
 
-                if (triggerWordInDelta && actionNameRefInDEA && delta.deltaLength < 0 && !actionNameRefsAlreadyActioned.includes(actionNameRefInDEA[0])){
+                if ((triggerWordInDelta || triggerWordInDEA) && actionNameRefInDEA && delta.deltaLength < 0 && !actionNameRefsAlreadyActioned.includes(actionNameRefInDEA[0])){
                     //console.log("is in actionNameRefsAlreadyActioned: ", actionNameRefsAlreadyActioned.includes(actionNameRefInDEA[0]));// test
                     // deleting a keyword 
                     actionNameRefsAlreadyActioned.push(actionNameRefInDEA[0]) // adding so a different trigger word with the same action doesn't also trigger with this ref
@@ -181,10 +182,10 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken, k
                     let keywordId = actionNameRefInDEA[0].replace(keyword.action_data.name + "Ref", '');
                     console.log("updating ", keyword.action_data.name, " with id: ", keywordId);
                     this.$dispatch(dispatchName, {actionName: keyword.action_data.name, triggerWord: keyword.trigger_word, operation: "update", id: keywordId, noteEditor: this.editor, newContentText: newContentText});
-                } else if(triggerWordInDelta && !actionNameRefInDEA && delta.deltaLength > 0){ 
+                } else if((triggerWordInDelta || triggerWordInDEA) && !actionNameRefInDEA && delta.deltaLength > 0){ 
                     // creating a keyword
                     console.log("creating a new ", keyword.action_data.name);
-                    this.$dispatch(dispatchName, {actionName: keyword.action_data.name, triggerWord: keyword.trigger_word, operation: "create", noteEditor: this.editor, newContentText: delta.deltaText});
+                    this.$dispatch(dispatchName, {actionName: keyword.action_data.name, triggerWord: keyword.trigger_word, operation: "create", noteEditor: this.editor, newContentText: newContentText});
                     document.addEventListener( keyword.action_data.name+'-created', (e) => {
                         console.log( keyword.action_data.name + "created event received in note editor: ", e.detail); // test
                         this.currentContent = this.editor.getContent(); // updating current content to prevent the new span tags trigging a create, update or delete
