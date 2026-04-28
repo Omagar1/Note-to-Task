@@ -94,7 +94,6 @@ class TaskController extends Controller
         request()->validate([
             'id' => 'required|integer|exists:tasks,id',
             'title' => 'nullable|string|max:255',
-            'deadline' => 'nullable|date'
         ]);
 
         try{
@@ -105,14 +104,10 @@ class TaskController extends Controller
             if($request->exists('title')){
                 $updateArr["title"] = $request->input('title');
             }
-
-            if($request->exists('deadline')){
-                $updateArr["deadline"] = $request->input('deadline');
-            }
-
+            
             $task->update($updateArr);
 
-            return response()->json(['message' => 'Task updated successfully', "deadline" => $request->input('deadline')]);
+            return response()->json(['message' => 'Task updated successfully']);
         }catch (Throwable $e){
             return response()->json(['message' => "Task update failed ", "error" => $e->getMessage()], 500);
         }

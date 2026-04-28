@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tasks', function (Blueprint $table) {
+        Schema::create('events', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('made_from_note_id')->constrained('notes')->onDelete('cascade');
-            $table->foreignId('sub_task_of_task_id')->nullable()->constrained('tasks')->onDelete('cascade');
+            $table->foreignId('task_id')->constrained('tasks')->onDelete('cascade');
             $table->string('title');
-            $table->dateTime('completed_at')->nullable();
+            $table->dateTime('event_date_time');
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tasks');
+        Schema::dropIfExists('events');
     }
 };

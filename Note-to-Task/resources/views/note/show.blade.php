@@ -31,20 +31,30 @@
 
         <div class="grid grid-cols-1 gap-2 items-start justify-start content-start p-4">
                 <div class = "top-0">
-                    <h1 class="text-4xl font-bold mb-4">Tasks</h1> 
+                    <h1 class="text-4xl font-bold mb-4">Tasks:</h1> 
                     <!-- insert search bar code here once made   -->
                     <!-- insert filter code here once made   -->
                 </div>
-                <div  id="taskContainer" x-data="taskActions()" x-init=' init({{ $note->id }}, {create: "{{ route("task.create") }}" , update: "{{ route("task.update") }}" , delete: "{{ route("task.delete") }}", toggleComplete: "{{ route("task.toggleComplete") }}" }, @json($tasks), @json($keywords) ) ' @task-detected.window ="detectTask($event.detail)" @deadline-detected.window="detectDeadline($event.detail)" class="grid grid-cols-1 gap-4"  >
+                <div  id="taskContainer" x-data="detectKeywords()" x-init=' init(
+                    {{ $note->id }}, 
+                    {create: "{{ route("task.create") }}" , update: "{{ route("task.update") }}" , delete: "{{ route("task.delete") }}", toggleComplete: "{{ route("task.toggleComplete") }}" },
+                    {create: "{{ route("event.create") }}" , update: "{{ route("event.update") }}" , delete: "{{ route("event.delete") }}"},
+                    @json($tasks),
+                    @json($keywords)
+                )' 
+                @task-detected.window ="detectTask($event.detail)"
+                @event-detected.window="detectEvent($event.detail)" class="grid grid-cols-1 gap-4" >
 
-                    <template x-for="task in tasks" :key="task.id">
-                        <div @mouseenter="highlightTask(task.id)" @mouseleave="unhighlightTask(task.id)"  class="flex flex-col gap-4 p-6 bg-blue-500 rounded shadow-md text-white hover:bg-orange-500 transition-colors transform  ease-in-out duration-300">
+                    <template x-for="task in actionObjects.task.tasks" :key="task.id">
+                        <div @mouseenter="actionObjects.task.highlightTask(task.id)" @mouseleave="actionObjects.task.unhighlightTask(task.id)"  class="flex flex-col gap-4 p-6 bg-blue-500 rounded shadow-md text-white hover:bg-orange-500 transition-colors transform  ease-in-out duration-300">
                             <div class ="w-full flex items-start justify-start gap-4">
                             <h3 x-text="task.title" class = "text-balance text-xl lg:text-2xl font-bold text-on-surface-strong dark:text-on-surface-dark-strong bg-on-surface-strong dark:bg-on-surface-dark-strong "></h3>
-                                <div x-show="(task.deadline != null)" class="bg-white rounded-full text-black p-1" >
-                                    <label :for="'deadline'+task.id">Deadline: </label>
-                                    <input @input="updateDeadlineFromTaskCard(task.id)" x-model="task.deadline" :id="'deadline'+task.id" :name = "'deadline'+task.id" type="datetime-local" >
-                                </div>
+                                <template x-for="event in task.events" :key="event.id">
+                                    <div class="bg-white rounded-full text-black p-1" >
+                                        <label :for="'event'+event.id" x-text="event.title" ></label>
+                                        <input @input="actionObjects.event.updateEventFromTaskCard(task.id, event.id, event.title)" x-model="event.event_date_time" :id="'event'+event.id" :name = "'event'+event.id" type="datetime-local" >
+                                    </div>
+                                </template>
                             </div>
                             <ul>
                                 <template x-for="subTask in task.sub_tasks" :key="subTask.id">
@@ -60,7 +70,7 @@
                             </ul>
                             <div x-show="(!(task.sub_tasks) || task.sub_tasks.length <=0)" class ="w-full flex items-start justify-start gap-4" >
                                 <label :for="'check-box-for-task-'+ task.id" class=" text-balance place-self-center" >Complete:</label>
-                                <input @change="toggleTaskComplete(task.id)" type="checkbox" :id="'check-box-for-task-'+ task.id" :name="'check-box-for-task-'+ task.id"  :value="task.id" :checked ="(task.completed_at != null)" class = "w-4 h-4 place-self-center border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft">
+                                <input @change="actionObjects.task.toggleTaskComplete(task.id)" type="checkbox" :id="'check-box-for-task-'+ task.id" :name="'check-box-for-task-'+ task.id"  :value="task.id" :checked ="(task.completed_at != null)" class = "w-4 h-4 place-self-center border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft">
                                 <span  x-show="(task.completed_at != null)" x-text="'completed: '+ helperScripts.diffForHumans(task.completed_at)" class = " place-self-center bg-green-500 p-1 rounded-full transition-opacity "> test</span> 
                             </div>           
 
@@ -69,7 +79,7 @@
                     </template>
 
 
-                    <p x-show="(tasks.length <= 0)" x-ref = "noTaskMsg">no tasks generated yet, to generate a task use the keyword task e.g.: "task: do stuff" creates task a task with title do stuff </p>
+                    <p x-show="(actionObjects.task.tasks.length <= 0)" x-ref = "noTaskMsg">no tasks generated yet, to generate a task use the keyword task e.g.: "task: do stuff" creates task a task with title do stuff </p>
                     
                 </div>
                 

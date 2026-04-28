@@ -5,6 +5,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\KeywordController;
+use App\Http\Controllers\EventController;
 use Symfony\Component\Routing\Loader\Configurator\Routes;
 
 
@@ -21,12 +22,18 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/note/update_content', [NoteController::class, 'update_content'])->name('note.update_content');
     Route::post('/note/update_title', [NoteController::class, 'update_title'])->name('note.update_title');
     Route::post('/note/delete', [NoteController::class, 'destroy'])->name('note.delete');
+    
     // task stuff
     //Route::resource('task', TaskController::class);
     Route::post('/task/create', [TaskController::class, 'store'])->name('task.create');
     Route::post('/task/update', [TaskController::class, 'update'])->name('task.update');
     Route::post('/task/delete', [TaskController::class, 'destroy'])->name('task.delete');
     Route::post('/task/toggleComplete', [TaskController::class, 'set_complete'])->name('task.toggleComplete');
+
+    //event stuff
+    Route::post('/event/create', [EventController::class, 'store'])->name('event.create');
+    Route::post('/event/update', [EventController::class, 'update'])->name('event.update');
+    Route::post('/event/delete', [EventController::class, 'destroy'])->name('event.delete');
 
     // key word stuff
     Route::get('/keyword', [KeywordController::class, 'index'])->name("keyword"); 

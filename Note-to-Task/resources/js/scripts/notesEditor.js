@@ -56,9 +56,18 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken, k
                             }, { once: true });
                         });
 
-                        document.addEventListener('deadline-updated', (event) => {
-                            const { taskId, deadline } = event.detail;
-                            this.editor.dom.setHTML('deadlineRef'+taskId, "deadline: "+ deadline );
+                        document.addEventListener('event-updated', (event) => {
+                            console.log("event-updated received in noteEditor with data: ",event.detail )
+                            const {id, eventTitle, formattedDateTime } = event.detail;
+                            console.log("eventId:", id); // test 
+                            let displayStr = eventTitle +" " + formattedDateTime; 
+                            console.log("displayStr: ", displayStr);
+                            const el = this.editor.dom.get('eventRef' + id);
+                            if (el) {
+                                this.editor.dom.setHTML(el, displayStr);
+                            } else {
+                                console.warn('Element not found:', 'eventRef' + id);
+                            }
                             this.currentContent = this.editor.getContent(); // updating so it doesn't effect delta 
                         })
                     });
@@ -164,7 +173,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken, k
                     actionNameRefsAlreadyActioned.push(actionNameRefInDEA[0]) // adding so a different trigger word with the same action doesn't also trigger with this ref
                     let keywordId = actionNameRefInDEA[0].replace( keyword.action_data.name+ "Ref", '');
                     console.log("Deleting ", keyword.action_data.name, " with id: ", keywordId);
-                    this.$dispatch(dispatchName, {actionName: keyword.action_data.name, triggerWord: keyword.trigger_word, operation: "delete", id: keywordId});
+                    this.$dispatch(dispatchName, {actionName: keyword.action_data.name, triggerWord: keyword.trigger_word, operation: "delete", id: keywordId, newContentText: newContentText});
                 }else if (actionNameRefInDEA && !triggerWordInDelta && !actionNameRefsAlreadyActioned.includes(actionNameRefInDEA[0])){
                     //console.log("is in actionNameRefsAlreadyActioned: ", actionNameRefsAlreadyActioned.includes(actionNameRefInDEA[0]));// test
                     // updating a keyword 

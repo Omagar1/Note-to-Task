@@ -20,7 +20,8 @@ return new class extends Migration
 
         DB::table('actions')->insert([
             ["name" => "task", "description" => "creates a task", "default_trigger_word" => "task:"],
-            ["name" => "deadline", "description" => "creates a deadline for a task, if used outside a task creates a new task", "default_trigger_word" => "deadline:"]
+            ["name" => "event", "description" => "creates a event which has a date and a time for a task, if used outside a task creates a new task", "default_trigger_word" => "deadline:"],
+            ["name" => "label", "description" => "creates a label for a note or a task so you can easily refer back ", "default_trigger_word" => "#"]
         ]);
     }
 

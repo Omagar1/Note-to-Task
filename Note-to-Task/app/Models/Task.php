@@ -4,16 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Note;
+use App\Models\Event;
 
 class Task extends Model
 {
     protected $fillable = [
         'title',
-        'extra_info',
         'made_from_note_id',
         'sub_task_of_task_id',
         'completed_at',
-        'deadline'
     ];
 
     public function note_data(){
@@ -23,5 +22,10 @@ class Task extends Model
     public function sub_tasks()
     {
         return $this->hasMany(Task::class, 'sub_task_of_task_id');
+    }
+
+    public function events()
+    {
+        return $this->hasMany(Event::class, 'task_id');
     }
 }

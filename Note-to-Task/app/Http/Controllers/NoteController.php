@@ -19,7 +19,7 @@ class NoteController extends Controller
     {
         // will also have tasks once made
         $notes = Note::where('user_id', auth()->id())->get();
-        $tasks = Task::whereHas('note_data', function ($qry){
+        $tasks = Task::with('events')->whereHas('note_data', function ($qry){
             $qry->where('user_id', auth()->id());
         })->get();
         return view('dashboard', ['notes' => $notes, 'tasks' => $tasks]);
@@ -43,7 +43,7 @@ class NoteController extends Controller
 
     public function show(Note $note)
     {
-        $tasks = Task::where('made_from_note_id', $note->id)->where('sub_task_of_task_id', null)->with('sub_tasks')->get();
+        $tasks = Task::with(['events', 'sub_tasks'])->where('made_from_note_id', $note->id)->where('sub_task_of_task_id', null)->get();
         $keywords = Keyword::with('action_data')->where('user_id', auth()->id())->get();
 
         return view('note.show', ['note' => $note, 'tasks' => $tasks, 'keywords' => $keywords]);
