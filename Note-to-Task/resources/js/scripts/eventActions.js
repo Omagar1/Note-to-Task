@@ -53,7 +53,7 @@ export const eventActions = {
         try {
         
         const currentSpan = noteData["noteEditor"].dom.getParent(noteData["noteEditor"].selection.getNode(), 'span') 
-        const parentSpanTag =  noteData["noteEditor"].dom.getParent(currentSpan.parentNode, 'span') ? noteData["noteEditor"].dom.getParent(currentSpan.parentNode, 'span') : null; // the parent is the tag we are in so to get the true parent we do it twice
+        const parentSpanTag =  noteData["noteEditor"].dom.getParent(currentSpan.parentNode, 'span') ? noteData["noteEditor"].dom.getParent(currentSpan.parentNode, 'span') : currentSpan; // the parent is the tag we are in so to get the true parent we do it twice
         // console.log("currentSpan: ", currentSpan); // test
         // console.log("parentSpanTag: ", parentSpanTag); // test
         // console.log("parentSpanTag.id: ", parentSpanTag.id); // test

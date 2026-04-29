@@ -20,7 +20,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken, k
                 selector: 'textarea#note-content',
                 plugins: 'lists link code',
                 extended_valid_elements: 'span[class|id]',
-                //keep_styles: false,
+                keep_styles: false,
                 //content_css: "/resources/css/app.css",
                 content_style: `
                         .task {

@@ -60,7 +60,7 @@
                                 <template x-for="subTask in task.sub_tasks" :key="subTask.id">
                                     <li>
                                         <label x-text="subTask.title" :for="'check-box-for-subtask-'+ subTask.id" class="text-balance place-self-center" ></label>
-                                        <input @change="toggleTaskComplete(subTask.id, task.id)" type="checkbox" :id="'check-box-for-subtask-'+ subTask.id " :name="'check-box-for-subtask-'+ subTask.id"  :value="subTask.id" :checked ="(subTask.completed_at != null)" class = "w-4 h-4 place-self-center border rounded-lg bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft" >
+                                        <input @change="actionObjects.task.toggleTaskComplete(subTask.id, task.id)" type="checkbox" :id="'check-box-for-subtask-'+ subTask.id " :name="'check-box-for-subtask-'+ subTask.id"  :value="subTask.id" :checked ="(subTask.completed_at != null)" class = "w-4 h-4 place-self-center border rounded-lg bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft" >
                                         <span x-show="(subTask.completed_at != null)"  x-text= "`completed: ${helperScripts.diffForHumans(subTask.completed_at)}`" class = "bg-green-500 p-1 rounded-full"></span>
                                         
                                     </li>
