@@ -255,13 +255,25 @@ export const taskActions = {
     updateTaskOnFrontend(noteData){ 
         let taskData = this.getTaskData(noteData);
         // update on front end
-        let taskIndex = this.tasks.findIndex(task => task.id == taskData.id);
-        if (taskIndex !== -1) {
-            this.tasks[taskIndex] = { ...this.tasks[taskIndex], ...taskData };
-        }else{
-            console.log("Task not found in frontend data with id: ", taskData.id); // test
-        }
+        if(taskData.sub_task_of_task_id){
+            let taskIndex = this.tasks.findIndex(task => task.id == taskData.sub_task_of_task_id);
+            if (taskIndex !== -1) {
+                let subTaskIndex = this.tasks[taskIndex].sub_tasks.findIndex(subTask => subTask.id == taskData.id);
 
+                this.tasks[taskIndex].sub_tasks[subTaskIndex].title = taskData.title;
+
+            }else{
+                console.log("Task not found in frontend data with id: ", taskData.id); // test
+            }
+
+        }else{
+            let taskIndex = this.tasks.findIndex(task => task.id == taskData.id);
+            if (taskIndex !== -1) {
+                this.tasks[taskIndex].title = taskData.title;
+            }else{
+                console.log("Task not found in frontend data with id: ", taskData.id); // test
+            }
+        }
     },
     async updateTaskInDB(noteData){ 
         let taskData = this.getTaskData(noteData);
@@ -310,12 +322,26 @@ export const taskActions = {
     },
 
     deleteTaskOnFrontend(noteData){ 
+        let taskData = this.getTaskData(noteData);
         // update on front end
-        let taskIndex = this.tasks.findIndex(task => task.id == noteData["id"]);
-        if (taskIndex !== -1) {
-            this.tasks.splice(taskIndex, 1);
+        if(taskData.sub_task_of_task_id){
+            let taskIndex = this.tasks.findIndex(task => task.id == taskData.sub_task_of_task_id);
+            if (taskIndex !== -1) {
+                let subTaskIndex = this.tasks[taskIndex].sub_tasks.findIndex(subTask => subTask.id == taskData.id);
+
+                this.tasks[taskIndex].sub_tasks.splice(subTaskIndex, 1);
+
+            }else{
+                console.log("Task not found in frontend data with id: ", taskData.id); // test
+            }
+
         }else{
-            console.log("Task not found in frontend data with id: ", noteData["id"]); // test
+            let taskIndex = this.tasks.findIndex(task => task.id == taskData.id);
+            if (taskIndex !== -1) {
+                this.tasks.splice(taskIndex, 1);
+            }else{
+                console.log("Task not found in frontend data with id: ", taskData.id); // test
+            }
         }
 
     },

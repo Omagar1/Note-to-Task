@@ -168,7 +168,7 @@ export default function noteEditor({ initialContent, noteId, route, csrfToken, k
                 console.log("triggerWordInDelta: ", triggerWordInDelta); // test
 
 
-                if ((triggerWordInDelta || triggerWordInDEA) && actionNameRefInDEA && delta.deltaLength < 0 && !actionNameRefsAlreadyActioned.includes(actionNameRefInDEA[0])){
+                if (triggerWordInDelta && actionNameRefInDEA && delta.deltaLength < 0 && !actionNameRefsAlreadyActioned.includes(actionNameRefInDEA[0])){
                     //console.log("is in actionNameRefsAlreadyActioned: ", actionNameRefsAlreadyActioned.includes(actionNameRefInDEA[0]));// test
                     // deleting a keyword 
                     actionNameRefsAlreadyActioned.push(actionNameRefInDEA[0]) // adding so a different trigger word with the same action doesn't also trigger with this ref

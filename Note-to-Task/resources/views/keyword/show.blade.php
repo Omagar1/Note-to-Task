@@ -37,11 +37,11 @@
                                 @endforeach
                             </select>
 
-                            <select @keydown.enter="updateAction({{ $keyword_data->id }})" @blur="updateAction({{ $keyword_data->id }})" x-model="actionId" name="action{{ $keyword_data->id }}" id="action{{ $keyword_data->id }}">
+                            <!-- <select @keydown.enter="updateAction({{ $keyword_data->id }})" @blur="updateAction({{ $keyword_data->id }})" x-model="actionId" name="action{{ $keyword_data->id }}" id="action{{ $keyword_data->id }}">
                                 @foreach ($actions as  $action_data)
                                     <option value="{{$action_data->id}}" {{ ($action_data->id == $keyword_data->action_data->id)? "selected" : ""}}>{{$action_data->description}}</option>
                                 @endforeach
-                            </select>
+                            </select> -->
                         </div>
 
                         <div x-show="errors!=null">
